@@ -26,7 +26,9 @@ export class SidebarComponent implements OnInit {
     { path: '/practice',   label: 'ลิงก์ซ้อม',       icon: 'link' },
     { path: '/athletes',   label: 'โปรไฟล์นักกีฬา', icon: 'groups' },
     { path: '/leave',      label: 'การลา',           icon: 'event_busy' },
-    { path: '/attendance', label: 'เช็กชื่อ',        icon: 'how_to_reg', roles: ['Super Admin','Coach'] },
+    { path: '/attendance',   label: 'เช็กชื่อ',          icon: 'how_to_reg',   roles: ['Super Admin','Coach'] },
+    { path: '/competitions', label: 'ประวัติการแข่งขัน', icon: 'emoji_events' },
+    { path: '/game',         label: 'เกมบั๊ดดี้',        icon: 'sports_esports' },
   ];
 
   adminItems: NavItem[] = [

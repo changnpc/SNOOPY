@@ -19,8 +19,7 @@
   <div class="sidebar-userinfo sidebar-userinfo-clickable" *ngIf="auth.currentUser"
        [class.active]="isActive('/profile')" (click)="navigate('/profile')"
        [title]="'โปรไฟล์ของฉัน' | t">
-    <img [src]="auth.currentUser.img_avatar_url || 'https://ui-avatars.com/api/?name=User&background=2d7dd2&color=fff&bold=true&size=40'"
-         class="sidebar-avatar" alt="avatar" />
+    <img [src]="auth.currentUser | avatar:40" class="sidebar-avatar" alt="avatar" />
     <div class="sidebar-usertext">
       <div class="sidebar-username">{{ auth.currentUser.th_prefix }}{{ auth.currentUser.th_first_name }}</div>
       <div class="sidebar-role">{{ auth.currentUser.role | t }}</div>

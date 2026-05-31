@@ -5,10 +5,10 @@
   </div>
 </div>
 
-<div *ngIf="loading" style="text-align:center;padding:60px;color:var(--text-muted)">{{ 'กำลังโหลด...' | t }}</div>
+<div *ngIf="loading" class="empty-state" style="padding:60px"><app-mascot [size]="96" mood="happy" [animate]="true"></app-mascot><p>{{ 'กำลังโหลด...' | t }}</p></div>
 
 <div class="activity-list" *ngIf="!loading">
-  <div *ngIf="activities.length===0"><div class="empty-state"><div class="empty-state-title">{{ 'ยังไม่มีกิจกรรม' | t }}</div></div></div>
+  <div *ngIf="activities.length===0"><div class="empty-state"><app-mascot [size]="100" mood="happy"></app-mascot><div class="empty-state-title">{{ 'ยังไม่มีกิจกรรม' | t }}</div></div></div>
 
   <div *ngFor="let a of activities; let i = index; trackBy: trackByActivityId" class="act-card" [attr.data-color]="colorClass(i)">
     <div class="act-card-side">

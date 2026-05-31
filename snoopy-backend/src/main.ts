@@ -19,6 +19,8 @@ import activitiesRoutes   from './routes/activities.routes';
 import practiceRoutes     from './routes/practice.routes';
 import notificationsRoutes   from './routes/notifications.routes';
 import rolePermissionsRoutes from './routes/role-permissions.routes';
+import competitionsRoutes    from './routes/competitions.routes';
+import dashboardRoutes       from './routes/dashboard.routes';
 
 // ── Fail fast on bad configuration ────────────────────────
 validateEnv();
@@ -103,6 +105,8 @@ app.use('/api/activities',     activitiesRoutes);
 app.use('/api/practice-links', practiceRoutes);
 app.use('/api/notifications',    notificationsRoutes);
 app.use('/api/role-permissions', rolePermissionsRoutes);
+app.use('/api/competitions',    competitionsRoutes);
+app.use('/api/dashboard',       dashboardRoutes);
 
 // ── 404 Handler ───────────────────────────────────────────
 app.use((_req, res) => {

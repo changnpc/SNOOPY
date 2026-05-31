@@ -9,16 +9,19 @@
   ═══════════════════════════════════════════════════════ -->
   <ng-container *ngIf="auth.isPlayer">
 
-    <!-- Welcome Banner -->
-    <div class="section-banner" style="margin-bottom:24px">
-      <div class="section-banner-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+    <!-- Welcome Hero (login-style scene) -->
+    <div class="dash-hero" style="margin-bottom:24px">
+      <span class="dash-hero-cloud" style="top:18%;left:10%"></span>
+      <span class="dash-hero-cloud" style="top:30%;right:24%;transform:scale(.7)"></span>
+      <div class="dash-hero-grass"></div>
+      <div class="dash-hero-mascot">
+        <app-mascot [size]="84" mood="wave" [animate]="true"></app-mascot>
       </div>
-      <div>
+      <div class="dash-hero-text">
         <div class="section-banner-title">{{ 'สวัสดี,' | t }} {{ auth.currentUser?.th_first_name }}! 👋</div>
         <div class="section-banner-sub">{{ myTeamName ? (('ทีม ' | t) + myTeamName) : '' }} · {{ (today | locDate) }}</div>
       </div>
-      <div style="margin-left:auto">
+      <div style="margin-left:auto;position:relative;z-index:2">
         <button class="btn btn-primary btn-sm" (click)="navigate('/leave')"><span class="mi mi-sm">event_busy</span> {{ 'แจ้งลาซ้อม' | t }}</button>
       </div>
     </div>
@@ -139,6 +142,39 @@
       </div>
     </div>
 
+    <!-- My Attendance Summary -->
+    <div *ngIf="myAttendanceStats" class="card" style="margin-bottom:24px">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="mi mi-sm" style="color:var(--primary)">how_to_reg</span>
+          {{ 'สรุปการซ้อม' | t }}
+        </div>
+        <button class="btn btn-outline btn-sm" (click)="navigate('/competitions')">
+          <span class="mi mi-sm">emoji_events</span> {{ 'ประวัติแข่งขัน' | t }}
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="dash-att-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;min-width:0">
+          <div>
+            <div style="font-size:1.6rem;font-weight:700;color:#2e7d32">{{ myAttendanceStats.practice_days }}</div>
+            <div style="font-size:.78rem;color:var(--text-secondary)">{{ 'วันที่เข้าซ้อม' | t }}</div>
+          </div>
+          <div>
+            <div style="font-size:1.6rem;font-weight:700;color:var(--danger)">{{ myAttendanceStats.absent_days }}</div>
+            <div style="font-size:.78rem;color:var(--text-secondary)">{{ 'วันที่ขาด' | t }}</div>
+          </div>
+          <div>
+            <div style="font-size:1.6rem;font-weight:700;color:var(--warning)">{{ myAttendanceStats.leave_days }}</div>
+            <div style="font-size:.78rem;color:var(--text-secondary)">{{ 'วันที่ลา' | t }}</div>
+          </div>
+          <div>
+            <div style="font-size:1.6rem;font-weight:700;color:var(--primary)">{{ myAttendanceStats.competition_count }}</div>
+            <div style="font-size:.78rem;color:var(--text-secondary)">{{ 'รายการแข่งขัน' | t }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </ng-container>
 
   <!-- ════════════════════════════════════════════════════
@@ -146,11 +182,12 @@
   ═══════════════════════════════════════════════════════ -->
   <ng-container *ngIf="auth.isCoach">
 
-    <div class="section-banner" style="margin-bottom:24px">
-      <div class="section-banner-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
-      </div>
-      <div>
+    <div class="dash-hero" style="margin-bottom:24px">
+      <span class="dash-hero-cloud" style="top:18%;left:10%"></span>
+      <span class="dash-hero-cloud" style="top:30%;right:24%;transform:scale(.7)"></span>
+      <div class="dash-hero-grass"></div>
+      <div class="dash-hero-mascot"><app-mascot [size]="84" mood="happy" [animate]="true"></app-mascot></div>
+      <div class="dash-hero-text">
         <div class="section-banner-title">{{ 'สวัสดี,' | t }} {{ auth.currentUser?.th_prefix }}{{ auth.currentUser?.th_first_name }}!</div>
         <div class="section-banner-sub">{{ 'โค้ช' | t }} · {{ (today | locDate) }}</div>
       </div>
@@ -192,7 +229,7 @@
     </div>
 
     <!-- Coach Bottom Grid -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
       <div class="card">
         <div class="card-header"><div class="card-title"><span class="mi mi-sm" style="color:var(--accent)">calendar_month</span> {{ 'กิจกรรมใกล้มา' | t }}</div><button class="btn-text-sm" (click)="navigate('/calendar')">{{ 'ดูทั้งหมด' | t }}</button></div>
         <div class="card-body" style="padding:0">
@@ -228,6 +265,46 @@
       </div>
     </div>
 
+    <!-- Team Attendance Summary Table -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="mi mi-sm" style="color:var(--primary)">how_to_reg</span>
+          {{ 'สรุปการซ้อม / แข่งขันของทีม' | t }}
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div *ngIf="coachTeamStatsLoading" class="empty-state" style="padding:24px">
+          <span class="mi">hourglass_empty</span><p>{{ 'กำลังโหลด...' | t }}</p>
+        </div>
+        <div *ngIf="!coachTeamStatsLoading && coachTeamStats.length === 0" class="empty-state" style="padding:24px">
+          <span class="mi">groups</span><p>{{ 'ไม่มีข้อมูล' | t }}</p>
+        </div>
+        <!-- Card list — fully responsive, no horizontal scroll -->
+        <div *ngFor="let p of coachTeamStats; trackBy: trackByUserId" class="team-stat-row">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+            <img [src]="avatarFor(p)"
+                 style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="" />
+            <span style="font-size:.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.th_name }}</span>
+          </div>
+          <div class="team-stat-nums">
+            <div class="team-stat-num" style="color:#2e7d32" [title]="'เข้าซ้อม' | t">
+              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ซ้อม' | t }}</span>{{ p.practice_days }}
+            </div>
+            <div class="team-stat-num" style="color:var(--danger)" [title]="'ขาด' | t">
+              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ขาด' | t }}</span>{{ p.absent_days }}
+            </div>
+            <div class="team-stat-num" style="color:var(--warning)" [title]="'ลา' | t">
+              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ลา' | t }}</span>{{ p.leave_days }}
+            </div>
+            <div class="team-stat-num" style="color:var(--primary)" [title]="'แข่งขัน' | t">
+              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'แข่ง' | t }}</span>{{ p.competition_count }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </ng-container>
 
   <!-- ════════════════════════════════════════════════════
@@ -235,11 +312,12 @@
   ═══════════════════════════════════════════════════════ -->
   <ng-container *ngIf="auth.isAdmin">
 
-    <div class="section-banner" style="margin-bottom:24px">
-      <div class="section-banner-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-      </div>
-      <div>
+    <div class="dash-hero" style="margin-bottom:24px">
+      <span class="dash-hero-cloud" style="top:16%;left:8%"></span>
+      <span class="dash-hero-cloud" style="top:32%;right:20%;transform:scale(.7)"></span>
+      <div class="dash-hero-grass"></div>
+      <div class="dash-hero-mascot"><app-mascot [size]="84" mood="cheer" [animate]="true"></app-mascot></div>
+      <div class="dash-hero-text">
         <div class="section-banner-title">{{ 'ระบบจัดการนักกีฬาบริดจ์เยาวชนทีมชาติ' | t }}</div>
         <div class="section-banner-sub">{{ 'สวัสดี,' | t }} {{ auth.currentUser?.th_prefix }}{{ auth.currentUser?.th_first_name }}! · {{ (today | locDate) }}</div>
       </div>
@@ -282,7 +360,7 @@
     </div>
 
     <!-- Admin Bottom Grid -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
       <div class="card">
         <div class="card-header"><div class="card-title"><span class="mi mi-sm" style="color:var(--accent)">calendar_month</span> {{ 'กิจกรรมใกล้มา' | t }}</div><button class="btn-text-sm" (click)="navigate('/calendar')">{{ 'ดูทั้งหมด' | t }}</button></div>
         <div class="card-body" style="padding:0">

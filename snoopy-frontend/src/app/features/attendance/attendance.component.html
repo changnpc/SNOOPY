@@ -45,7 +45,7 @@
 </div>
 
 <!-- Tabs -->
-<div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden">
+<div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:visible">
   <div style="border-bottom:1px solid var(--border)">
     <div class="tabs" style="padding:0 16px;margin:0;border:none">
       <button class="tab-btn" [class.active]="activeTab==='sheet'" (click)="activeTab='sheet'">{{ 'เช็กชื่อวันนี้' | t }}</button>
@@ -55,58 +55,80 @@
 
   <!-- Sheet Tab -->
   <div *ngIf="activeTab==='sheet'">
-    <div *ngIf="loading" style="text-align:center;padding:40px;color:var(--text-muted)">{{ 'กำลังโหลด...' | t }}</div>
-    <div *ngIf="!loading && players.length===0" class="empty-state" style="padding:40px"><div class="empty-state-title">{{ 'ไม่มีนักกีฬาในทีมนี้' | t }}</div></div>
+    <div *ngIf="loading" class="empty-state" style="padding:40px">
+      <app-mascot [size]="96" mood="happy" [animate]="true"></app-mascot>
+      <p>{{ 'กำลังโหลด...' | t }}</p>
+    </div>
+    <div *ngIf="!loading && players.length===0" class="empty-state" style="padding:40px">
+      <app-mascot [size]="100" mood="sleep"></app-mascot>
+      <div class="empty-state-title">{{ 'ไม่มีนักกีฬาในทีมนี้' | t }}</div>
+    </div>
+
     <div *ngIf="!loading && players.length>0">
-      <!-- Bulk actions bar -->
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg)">
-        <span style="font-size:.8rem;font-weight:600;color:var(--text-muted);margin-right:4px">{{ 'เช็กชื่อทั้งหมด:' | t }}</span>
-        <button class="btn btn-sm att-bulk-present" (click)="setAll('Present')">
+      <!-- Bulk quick-select bar -->
+      <div class="att-bulk-bar">
+        <span class="att-bulk-label">{{ 'เลือกทั้งหมด' | t }}</span>
+        <button class="att-bulk-btn att-bulk-btn--present" (click)="setAll('Present')">
           <span class="mi mi-sm">check</span> {{ 'มาทุกคน' | t }}
         </button>
-        <button class="btn btn-sm att-bulk-absent" (click)="setAll('Absent')">
+        <button class="att-bulk-btn att-bulk-btn--absent" (click)="setAll('Absent')">
           <span class="mi mi-sm">close</span> {{ 'ขาดทุกคน' | t }}
         </button>
-        <button class="btn btn-ghost btn-sm" (click)="setAll('')" style="margin-left:4px">
+        <button class="att-bulk-btn att-bulk-btn--reset" (click)="setAll('')">
           <span class="mi mi-sm">refresh</span> {{ 'รีเซ็ต' | t }}
         </button>
-        <button class="btn btn-primary btn-sm" style="margin-left:auto" (click)="saveAll()" [disabled]="saving">
-          <span class="mi mi-sm">save</span> {{ (saving ? 'กำลังบันทึก...' : 'บันทึกทั้งหมด') | t }}
+      </div>
+
+      <!-- Player cards -->
+      <div class="att-player-list">
+        <div *ngFor="let row of players; let i=index; trackBy: trackByPlayerId"
+             class="att-player-card"
+             [class.att-status--present]="row.status==='Present'"
+             [class.att-status--absent]="row.status==='Absent'"
+             [class.att-status--leave]="row.status==='Leave'">
+
+          <!-- Left: index + avatar + name -->
+          <div class="att-player-info">
+            <span class="att-player-index">{{ i+1 }}</span>
+            <img [src]="row.user | avatar:40" class="avatar" style="width:38px;height:38px;flex-shrink:0" />
+            <div class="att-player-name-wrap">
+              <div class="att-player-name">{{ row.user.th_prefix }}{{ row.user.th_first_name }} {{ row.user.th_last_name }}</div>
+              <div class="att-player-team">{{ row.user.email }}</div>
+            </div>
+          </div>
+
+          <!-- Right: 3 status buttons -->
+          <div class="att-status-group">
+            <button class="att-status-btn att-status-btn--present"
+                    [class.active]="row.status==='Present'"
+                    (click)="setStatus(row, 'Present')">
+              <span class="mi">check</span>
+              <span>{{ 'มา' | t }}</span>
+            </button>
+            <button class="att-status-btn att-status-btn--absent"
+                    [class.active]="row.status==='Absent'"
+                    (click)="setStatus(row, 'Absent')">
+              <span class="mi">close</span>
+              <span>{{ 'ขาด' | t }}</span>
+            </button>
+            <button class="att-status-btn att-status-btn--leave"
+                    [class.active]="row.status==='Leave'"
+                    (click)="setStatus(row, 'Leave')">
+              <span class="mi">event_busy</span>
+              <span>{{ 'ลา' | t }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save button — sticky bottom, full width -->
+      <div class="att-save-bar">
+        <button class="att-save-btn" (click)="saveAll()" [disabled]="saving">
+          <span class="mi">{{ saving ? 'hourglass_empty' : 'save' }}</span>
+          {{ (saving ? 'กำลังบันทึก...' : 'บันทึกการเช็กชื่อ') | t }}
         </button>
       </div>
-    <div class="table-wrap" style="border:none;border-radius:0">
-      <table class="table">
-        <thead><tr><th>#</th><th>{{ 'นักกีฬา' | t }}</th><th style="text-align:center">{{ 'สถานะ' | t }}</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let row of players; let i=index; trackBy: trackByPlayerId">
-            <td style="color:var(--text-muted);width:40px">{{ i+1 }}</td>
-            <td>
-              <div style="display:flex;align-items:center;gap:10px">
-                <img [src]="row.user | avatar:40" class="avatar avatar-sm" />
-                <div>
-                  <div style="font-weight:600">{{ row.user.th_prefix }}{{ row.user.th_first_name }} {{ row.user.th_last_name }}</div>
-                  <div style="font-size:.75rem;color:var(--text-muted)">{{ row.user.email }}</div>
-                </div>
-              </div>
-            </td>
-            <td style="text-align:center">
-              <div style="display:flex;gap:6px;justify-content:center">
-                <button *ngFor="let s of ['Present','Absent','Leave']"
-                  class="attendance-status-btn"
-                  [class.active-present]="row.status==='Present' && s==='Present'"
-                  [class.active-absent]="row.status==='Absent'  && s==='Absent'"
-                  [class.active-leave]="row.status==='Leave'   && s==='Leave'"
-                  (click)="setStatus(row, s)">
-                  <span class="mi mi-sm" style="vertical-align:-3px">{{ s==='Present'?'check':s==='Absent'?'close':'event_busy' }}</span>
-                  {{ (s==='Present'?'มา':s==='Absent'?'ขาด':'ลา') | t }}
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
     </div>
-    </div><!-- end players.length>0 -->
   </div>
 
   <!-- History Tab -->

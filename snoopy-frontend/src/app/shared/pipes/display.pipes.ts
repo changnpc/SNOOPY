@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { LanguageService } from '../../core/services/language.service';
 import { TeamsService } from '../../core/services/teams.service';
 import { User } from '../../models';
+import { mascotAvatarUri } from '../mascot-svg';
 
 /**
  * Shared, single-source-of-truth display pipes.
@@ -13,17 +14,17 @@ import { User } from '../../models';
  * happens in exactly one place.
  */
 
-const AVATAR_BG = '2d7dd2';
-
-/** {{ user | avatar }} or {{ user | avatar:40 }} → avatar image URL. */
+/**
+ * {{ user | avatar }} → avatar image URL.
+ * Real uploaded photo wins; otherwise a varied "Buddy" mascot (seeded by the
+ * user id/name) so every athlete gets a consistent, distinct cartoon avatar.
+ */
 @Pipe({ name: 'avatar', pure: true })
 export class AvatarPipe implements PipeTransform {
-  transform(user: User | null | undefined, size = 80): string {
+  transform(user: User | null | undefined, _size = 80): string {
     if (user?.img_avatar_url) return user.img_avatar_url;
-    const first = user?.en_first_name ?? '';
-    const last  = user?.en_last_name ?? '';
-    const name  = encodeURIComponent(`${first} ${last}`.trim() || 'User');
-    return `https://ui-avatars.com/api/?name=${name}&background=${AVATAR_BG}&color=fff&bold=true&size=${size}`;
+    const seed = user?.user_id || `${user?.en_first_name ?? ''}${user?.en_last_name ?? ''}` || 'buddy';
+    return mascotAvatarUri(seed);
   }
 }
 

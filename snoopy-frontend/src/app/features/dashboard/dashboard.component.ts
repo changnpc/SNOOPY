@@ -8,6 +8,9 @@ import { EventsService } from '../../core/services/events.service';
 import { ActivitiesService } from '../../core/services/activities.service';
 import { TeamsService } from '../../core/services/teams.service';
 import { LanguageService } from '../../core/services/language.service';
+import { CompetitionsService } from '../../core/services/competitions.service';
+import { CoachPlayerStats, PlayerDashboardStats } from '../../models';
+import { mascotAvatarUri } from '../../shared/mascot-svg';
 import { Router } from '@angular/router';
 
 @Component({
@@ -26,6 +29,11 @@ export class DashboardComponent implements OnInit {
   teamNames: Record<string, string> = {};
   userNames: Record<string, string> = {};
 
+  // Attendance/competition summary stats
+  coachTeamStats: CoachPlayerStats[] = [];
+  coachTeamStatsLoading = true;
+  myAttendanceStats: PlayerDashboardStats | null = null;
+
   // Player
   playerStats = { myPendingLeave: 0, myTotalLeave: 0, upcomingEvents: 0, teamMates: 0 };
   myLeaves: any[] = [];
@@ -40,6 +48,7 @@ export class DashboardComponent implements OnInit {
     private activitiesSvc: ActivitiesService,
     private teamsSvc: TeamsService,
     private langSvc: LanguageService,
+    private compSvc: CompetitionsService,
     private router: Router
   ) {}
 
@@ -48,8 +57,15 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     if (this.auth.isPlayer) {
       this.loadPlayer();
+      this.compSvc.getDashboardPlayer().subscribe({
+        next: res => { if (res.success) this.myAttendanceStats = res.data; },
+      });
     } else {
       this.loadAdminCoach();
+      this.compSvc.getDashboardCoach().subscribe({
+        next: res => { if (res.success) this.coachTeamStats = res.data; this.coachTeamStatsLoading = false; },
+        error: () => { this.coachTeamStatsLoading = false; },
+      });
     }
   }
 
@@ -156,4 +172,9 @@ export class DashboardComponent implements OnInit {
   trackByEventId(_: number, ev: any): string { return ev.event_id ?? _; }
   trackByLeaveId(_: number, lv: any): string { return lv.leave_id ?? _; }
   trackByActivityId(_: number, act: any): string { return act.activity_id ?? _; }
+  trackByUserId(_: number, u: any): string { return u.user_id ?? _; }
+
+  avatarFor(p: CoachPlayerStats): string {
+    return p.img_avatar_url || mascotAvatarUri(p.user_id);
+  }
 }

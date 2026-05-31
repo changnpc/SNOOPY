@@ -7,12 +7,12 @@
   </div>
 
   <div class="topbar-right">
-    <button class="btn-icon" (click)="toggleLang()" [title]="'ภาษา' | t">
-      <span style="font-size:.8rem;font-weight:800;letter-spacing:.5px">{{ (langSvc.lang$ | async) === 'en' ? 'EN' : 'TH' }}</span>
+    <button class="btn-icon btn-icon-lang" (click)="toggleLang()" [title]="'ภาษา' | t">
+      <span style="font-size:.78rem;font-weight:800;letter-spacing:.5px">{{ (langSvc.lang$ | async) === 'en' ? 'EN' : 'TH' }}</span>
     </button>
-    <button class="btn-icon" (click)="toggleTheme()"
+    <button class="btn-icon btn-icon-theme" (click)="toggleTheme()"
             [title]="((theme.theme$ | async) === 'dark' ? 'โหมดสว่าง' : 'โหมดมืด') | t">
-      <span class="mi">{{ (theme.theme$ | async) === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+      <span class="mi" [style.color]="(theme.theme$ | async) === 'dark' ? '#ffd95e' : '#4a90d9'">{{ (theme.theme$ | async) === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
     </button>
 
     <div class="notif-wrap" (clickOutside)="showNotifPanel=false">

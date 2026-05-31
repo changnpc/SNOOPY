@@ -1,0 +1,248 @@
+<div class="page-content">
+  <div class="page-header">
+    <div><h1>{{ 'ประวัติการแข่งขัน' | t }}</h1></div>
+    <div class="page-header-actions" *ngIf="auth.isAdmin || auth.isPlayer">
+      <button class="btn btn-primary" (click)="openModal()">
+        <span class="mi mi-sm">add</span>
+        {{ (auth.isAdmin ? 'เพิ่มผลการแข่งขัน' : 'แจ้งผลการแข่งขัน') | t }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs (Admin only) -->
+  <div *ngIf="auth.isAdmin" class="card" style="padding:0;margin-bottom:16px;overflow:visible">
+    <div class="tabs" style="padding:0 16px;margin:0;border:none;border-bottom:1px solid var(--border)">
+      <button class="tab-btn" [class.active]="activeTab==='my'" (click)="activeTab='my'">{{ 'ทั้งหมด' | t }}</button>
+      <button class="tab-btn" [class.active]="activeTab==='pending'" (click)="activeTab='pending'">
+        {{ 'รออนุมัติ' | t }}
+        <span *ngIf="pendingResults.length > 0" class="tab-badge">{{ pendingResults.length }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="empty-state"><app-mascot [size]="96" mood="happy" [animate]="true"></app-mascot><p>{{ 'กำลังโหลด...' | t }}</p></div>
+
+  <!-- My / All results -->
+  <ng-container *ngIf="!loading && activeTab==='my'">
+    <div *ngIf="results.length === 0" class="empty-state">
+      <app-mascot [size]="110" mood="happy" [animate]="true"></app-mascot>
+      <p>{{ 'ยังไม่มีประวัติการแข่งขัน' | t }}</p>
+    </div>
+    <div class="comp-list">
+      <div *ngFor="let r of results; trackBy: trackByResult" class="comp-item card">
+        <div class="card-body">
+          <div class="comp-header">
+            <div class="comp-meta">
+              <span class="comp-date" *ngIf="r.competition?.date_from">
+                <span class="mi mi-sm">calendar_today</span>
+                {{ r.competition?.date_from | date:'dd MMM yyyy' }}
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span *ngIf="r.award" class="badge {{ awardClass(r.award) }}" style="display:inline-flex;align-items:center;gap:4px">
+                <span class="mi mi-sm" [style.color]="awardIconColor(r.award)">{{ awardIcon(r.award) }}</span> {{ r.award | t }}
+              </span>
+              <span *ngIf="r.status !== 'Approved'" class="badge" [ngClass]="statusClass(r.status)">
+                {{ (r.status === 'Pending' ? 'รออนุมัติ' : 'ไม่ผ่าน') | t }}
+              </span>
+            </div>
+          </div>
+          <h3 class="comp-name">{{ displayName(r) }}</h3>
+          <div class="comp-details">
+            <span *ngIf="r.category" class="comp-detail-item"><span class="mi mi-sm">category</span> {{ r.category }}</span>
+            <span *ngIf="r.rank" class="comp-detail-item"><span class="mi mi-sm">military_tech</span> {{ 'อันดับที่' | t }} {{ r.rank }}</span>
+            <span *ngIf="r.score" class="comp-detail-item"><span class="mi mi-sm">scoreboard</span> {{ r.score }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Pending tab (Admin) -->
+  <ng-container *ngIf="!loading && activeTab==='pending'">
+    <div *ngIf="pendingResults.length === 0" class="empty-state">
+      <app-mascot [size]="100" mood="sleep"></app-mascot>
+      <p>{{ 'ไม่มีรายการรออนุมัติ' | t }}</p>
+    </div>
+    <div class="comp-list">
+      <div *ngFor="let r of pendingResults; trackBy: trackByResult" class="comp-item card">
+        <div class="card-body">
+          <div class="comp-header">
+            <div>
+              <div style="font-weight:600;font-size:.92rem;margin-bottom:4px">{{ displayName(r) }}</div>
+              <span class="comp-detail-item"><span class="mi mi-sm">person</span> {{ athleteName(r.user_id) }}</span>
+            </div>
+            <span class="badge badge-warning">{{ 'รออนุมัติ' | t }}</span>
+          </div>
+          <div class="comp-details" style="margin-top:8px">
+            <span *ngIf="r.category" class="comp-detail-item"><span class="mi mi-sm">category</span> {{ r.category }}</span>
+            <span *ngIf="r.rank" class="comp-detail-item"><span class="mi mi-sm">military_tech</span> {{ 'อันดับที่' | t }} {{ r.rank }}</span>
+            <span *ngIf="r.award" class="comp-detail-item">
+              <span class="mi mi-sm" [style.color]="awardIconColor(r.award)">{{ awardIcon(r.award) }}</span> {{ r.award | t }}
+            </span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-success btn-sm" (click)="approve(r.result_id)"><span class="mi mi-sm">check</span> {{ 'อนุมัติ' | t }}</button>
+            <button class="btn btn-danger btn-sm" (click)="reject(r.result_id)"><span class="mi mi-sm">close</span> {{ 'ปฏิเสธ' | t }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- ── Add Result Modal ── -->
+<ng-container *ngIf="showModal">
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">{{ (auth.isAdmin ? 'เพิ่มผลการแข่งขัน' : 'แจ้งผลการแข่งขัน') | t }}</div>
+        <button class="modal-close" (click)="closeModal()"><span class="mi">close</span></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Player info banner -->
+        <div *ngIf="!auth.isAdmin" class="section-banner" style="margin-bottom:16px;padding:10px 14px">
+          <span class="mi mi-sm section-banner-icon" style="width:28px;height:28px;font-size:1rem">info</span>
+          <span style="font-size:.82rem">{{ 'คำขอจะถูกส่งให้ Admin ตรวจสอบก่อนแสดงในประวัติ' | t }}</span>
+        </div>
+
+        <form [formGroup]="form">
+
+          <!-- ── Athlete picker (Admin only) ── -->
+          <div class="form-group" *ngIf="auth.isAdmin" style="position:relative">
+            <label class="form-label">{{ 'นักกีฬา' | t }} <span class="required">*</span></label>
+
+            <!-- Selected display / trigger -->
+            <div class="athlete-picker-trigger" [class.open]="athletePickerOpen" (click)="athletePickerOpen = !athletePickerOpen">
+              <ng-container *ngIf="selectedAthlete; else noAthlete">
+                <img [src]="selectedAthlete | avatar:32" class="avatar" style="width:28px;height:28px;flex-shrink:0" />
+                <span style="flex:1">{{ athleteFullName(selectedAthlete) }}</span>
+                <button type="button" class="athlete-picker-clear" (click)="clearAthlete(); $event.stopPropagation()">
+                  <span class="mi mi-sm">close</span>
+                </button>
+              </ng-container>
+              <ng-template #noAthlete>
+                <span style="color:var(--text-muted);flex:1">{{ '— เลือกนักกีฬา —' | t }}</span>
+                <span class="mi mi-sm" style="color:var(--text-muted)">expand_more</span>
+              </ng-template>
+            </div>
+
+            <!-- Dropdown panel -->
+            <div class="athlete-picker-panel" *ngIf="athletePickerOpen" (click)="$event.stopPropagation()">
+              <!-- Search -->
+              <div class="athlete-picker-search">
+                <span class="mi mi-sm">search</span>
+                <input type="text" [(ngModel)]="athleteSearch" [ngModelOptions]="{standalone:true}"
+                       [placeholder]="'ค้นหาชื่อ...' | t" autofocus />
+                <button *ngIf="athleteSearch" type="button" (click)="athleteSearch=''">
+                  <span class="mi mi-sm">close</span>
+                </button>
+              </div>
+
+              <!-- Team filter chips -->
+              <div class="athlete-picker-teams">
+                <button type="button" class="team-chip" [class.active]="!athleteTeamFilter"
+                        (click)="athleteTeamFilter=''">{{ 'ทั้งหมด' | t }}</button>
+                <button type="button" class="team-chip" *ngFor="let t of teams; trackBy: trackByTeam"
+                        [class.active]="athleteTeamFilter===t.team_id"
+                        (click)="athleteTeamFilter=t.team_id">{{ t.team_name }}</button>
+              </div>
+
+              <!-- Athlete list -->
+              <div class="athlete-picker-list">
+                <div *ngIf="filteredAthletes.length === 0" style="padding:16px;text-align:center;color:var(--text-muted);font-size:.85rem">
+                  {{ 'ไม่พบนักกีฬา' | t }}
+                </div>
+                <button type="button" class="athlete-picker-item"
+                        *ngFor="let a of filteredAthletes; trackBy: trackByUser"
+                        [class.selected]="selectedAthlete?.user_id === a.user_id"
+                        (click)="selectAthlete(a)">
+                  <img [src]="a | avatar:32" class="avatar" style="width:32px;height:32px;flex-shrink:0" />
+                  <div style="min-width:0">
+                    <div style="font-weight:600;font-size:.88rem">{{ athleteFullName(a) }}</div>
+                    <div style="font-size:.72rem;color:var(--text-muted)">{{ a.email }}</div>
+                  </div>
+                  <span *ngIf="selectedAthlete?.user_id === a.user_id" class="mi mi-sm" style="color:var(--primary);margin-left:auto">check</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Competition name -->
+          <div class="form-group">
+            <label class="form-label">{{ 'ชื่อรายการแข่งขัน' | t }} <span class="required">*</span></label>
+            <input class="form-control" formControlName="competition_name"
+                   [placeholder]="'เช่น Thailand Youth Bridge Championship 2025' | t" />
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label class="form-label">{{ 'ประเภทที่แข่ง' | t }} <span class="required">*</span></label>
+            <input class="form-control" formControlName="category"
+                   [placeholder]="'เช่น Pairs U21, Teams U16' | t" />
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <!-- Rank -->
+            <div class="form-group">
+              <label class="form-label">{{ 'อันดับที่ได้' | t }}</label>
+              <input class="form-control" type="number" formControlName="rank" min="1" [placeholder]="'ถ้ามี' | t" />
+            </div>
+
+            <!-- Award custom dropdown -->
+            <div class="form-group" style="position:relative">
+              <label class="form-label">{{ 'รางวัล / ผล' | t }}</label>
+              <button type="button" class="custom-select-trigger"
+                      [class.open]="awardPickerOpen"
+                      (click)="awardPickerOpen = !awardPickerOpen; $event.stopPropagation()">
+                <ng-container *ngIf="form.value.award; else noAward">
+                  <span class="mi mi-sm" [style.color]="awardIconColor(form.value.award)">{{ awardIcon(form.value.award) }}</span>
+                  <span>{{ form.value.award | t }}</span>
+                </ng-container>
+                <ng-template #noAward>
+                  <span style="color:var(--text-muted)">{{ '— ไม่มี —' | t }}</span>
+                </ng-template>
+                <span class="mi mi-sm" style="margin-left:auto;color:var(--text-muted)">expand_more</span>
+              </button>
+
+              <div class="custom-select-panel" *ngIf="awardPickerOpen" (click)="$event.stopPropagation()">
+                <!-- None option -->
+                <button type="button" class="custom-select-option" [class.selected]="!form.value.award"
+                        (click)="selectAward('')">
+                  <span class="mi mi-sm" style="color:var(--text-muted)">remove_circle_outline</span>
+                  <span>{{ '— ไม่มี —' | t }}</span>
+                  <span *ngIf="!form.value.award" class="mi mi-sm" style="margin-left:auto;color:var(--primary)">check</span>
+                </button>
+                <!-- Award options -->
+                <button type="button" class="custom-select-option"
+                        *ngFor="let o of awardOptions"
+                        [class.selected]="form.value.award === o"
+                        (click)="selectAward(o)">
+                  <span class="mi mi-sm" [style.color]="awardIconColor(o)">{{ awardIcon(o) }}</span>
+                  <span>{{ o | t }}</span>
+                  <span *ngIf="form.value.award === o" class="mi mi-sm" style="margin-left:auto;color:var(--primary)">check</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Score -->
+          <div class="form-group">
+            <label class="form-label">{{ 'คะแนน' | t }}</label>
+            <input class="form-control" formControlName="score" [placeholder]="'ระบุคะแนน (ถ้ามี)' | t" />
+          </div>
+
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="closeModal()">{{ 'ยกเลิก' | t }}</button>
+        <button class="btn btn-primary" [disabled]="form.invalid || saving" (click)="submit()">
+          <span *ngIf="saving" class="mi mi-sm">hourglass_empty</span>
+          {{ (auth.isAdmin ? 'บันทึก' : 'ส่งคำขอ') | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

@@ -19,6 +19,8 @@ const routes: Routes = [
       { path: 'user-management', loadChildren: () => import('../user-management/user-management.module').then(m => m.UserManagementModule), canActivate: [AuthGuard], data: { roles: ['Super Admin'] } },
       { path: 'notifications', loadChildren: () => import('../notifications/notifications.module').then(m => m.NotificationsModule) },
       { path: 'profile',       loadChildren: () => import('../profile/profile.module').then(m => m.ProfileModule) },
+      { path: 'competitions',  loadChildren: () => import('../competitions/competitions.module').then(m => m.CompetitionsModule) },
+      { path: 'game',          loadChildren: () => import('../game/game.module').then(m => m.GameModule) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

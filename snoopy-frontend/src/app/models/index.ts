@@ -162,6 +162,57 @@ export interface ApiError {
   };
 }
 
+export type CompetitionLevel = 'regional' | 'national' | 'international';
+export type AwardType = string; // 'Gold' | 'Silver' | 'Bronze' | 'Special' | 'เข้าร่วม' | ''
+
+export interface Competition {
+  competition_id: string;
+  name: string;
+  level: CompetitionLevel;
+  location: string;
+  date_from: string;
+  date_to: string;
+  organizer: string;
+  note?: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type CompetitionResultStatus = 'Pending' | 'Approved' | 'Rejected';
+
+export interface CompetitionResult {
+  result_id: string;
+  competition_id: string;
+  competition_name: string;
+  user_id: string;
+  category: string;
+  rank: number | string;
+  award: AwardType;
+  score: string;
+  status: CompetitionResultStatus;
+  note?: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  competition?: Competition | null; // joined
+}
+
+export interface PlayerDashboardStats {
+  practice_days: number;
+  absent_days: number;
+  leave_days: number;
+  competition_count: number;
+}
+
+export interface CoachPlayerStats extends PlayerDashboardStats {
+  user_id: string;
+  team_id: string;
+  th_name: string;
+  en_name: string;
+  img_avatar_url: string;
+}
+
 export interface PaginatedResponse<T> {
   success: boolean;
   data: T[];

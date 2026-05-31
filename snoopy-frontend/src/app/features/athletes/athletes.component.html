@@ -45,15 +45,13 @@
 </div>
 
 <!-- Loading -->
-<div *ngIf="loading" style="text-align:center;padding:60px;color:var(--text-muted)">{{ 'กำลังโหลด...' | t }}</div>
+<div *ngIf="loading" class="empty-state" style="padding:60px"><app-mascot [size]="96" mood="happy" [animate]="true"></app-mascot><p>{{ 'กำลังโหลด...' | t }}</p></div>
 
 <!-- Grid -->
 <div *ngIf="!loading" class="athletes-grid">
   <div *ngIf="filtered.length === 0" style="grid-column:1/-1">
     <div class="empty-state">
-      <div class="empty-state-icon">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-      </div>
+      <app-mascot [size]="100" mood="sleep"></app-mascot>
       <div class="empty-state-title">ไม่พบนักกีฬา</div>
     </div>
   </div>

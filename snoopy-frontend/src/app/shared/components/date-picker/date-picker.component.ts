@@ -1,8 +1,9 @@
 import {
-  Component, forwardRef, HostListener, OnInit, Input
+  Component, forwardRef, HostListener, OnInit, OnDestroy, Input
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LanguageService } from '../../../core/services/language.service';
+import { DatePickerRegistryService } from '../../../core/services/date-picker-registry.service';
 
 interface CalCell { day: number | null; date: string; isToday: boolean; isOtherMonth: boolean; }
 
@@ -60,7 +61,7 @@ interface CalCell { day: number | null; date: string; isToday: boolean; isOtherM
 </div>
   `,
 })
-export class DatePickerComponent implements ControlValueAccessor, OnInit {
+export class DatePickerComponent implements ControlValueAccessor, OnInit, OnDestroy {
   @Input() placeholder = 'เลือกวันที่';
   @Input() min = '';
 
@@ -80,10 +81,16 @@ export class DatePickerComponent implements ControlValueAccessor, OnInit {
 
   private onChange = (_: string) => {};
   private onTouched = () => {};
+  private unregister = () => {};
 
-  constructor(private langSvc: LanguageService) {}
+  constructor(private langSvc: LanguageService, private registry: DatePickerRegistryService) {}
 
-  ngOnInit() { this.buildCells(); }
+  ngOnInit() {
+    this.buildCells();
+    this.unregister = this.registry.register(() => { this.open = false; });
+  }
+
+  ngOnDestroy() { this.unregister(); }
 
   get isEn(): boolean { return this.langSvc.lang === 'en'; }
   get months(): string[] { return this.isEn ? this.enMonths : this.thMonths; }
@@ -99,6 +106,7 @@ export class DatePickerComponent implements ControlValueAccessor, OnInit {
 
   toggle() {
     if (this.disabled) return;
+    if (!this.open) this.registry.closeAll(() => { this.open = false; }); // close others first
     this.open = !this.open;
     if (this.open && this.value) {
       const [y, m] = this.value.split('-').map(Number);

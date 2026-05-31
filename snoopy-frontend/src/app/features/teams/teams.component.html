@@ -8,7 +8,7 @@
   </div>
 </div>
 
-<div *ngIf="loading" style="text-align:center;padding:60px;color:var(--text-muted)">{{ 'กำลังโหลด...' | t }}</div>
+<div *ngIf="loading" class="empty-state" style="padding:60px"><app-mascot [size]="96" mood="happy" [animate]="true"></app-mascot><p>{{ 'กำลังโหลด...' | t }}</p></div>
 
 <!-- Big Team Cards -->
 <div *ngIf="!loading" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px">

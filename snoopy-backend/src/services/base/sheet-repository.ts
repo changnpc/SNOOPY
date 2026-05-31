@@ -23,6 +23,10 @@ export const DeactivateFlag = <T extends { is_active?: string }>(cascade?: (id: 
   mark: () => ({ is_active: 'FALSE' } as Partial<T>),
   cascade,
 });
+export const TombstoneNote = <T extends { note?: string }>(cascade?: (id: string) => Promise<void>): SoftDeleteStrategy<T> => ({
+  mark: () => ({ note: '[DELETED]' } as Partial<T>),
+  cascade,
+});
 
 /**
  * Generic data-access layer for one Google Sheet tab.

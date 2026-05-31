@@ -1,0 +1,40 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h1>{{ 'บั๊ดดี้ วิ่งซิ่ง' | t }}</h1>
+      <p class="page-subtitle">
+        {{ (mode === 'jump' ? 'กด Space / แตะ เพื่อกระโดดข้ามสิ่งกีดขวาง' : 'ลาก / กดลูกศรซ้าย-ขวา เพื่อหลบสิ่งกีดขวาง') | t }}
+      </p>
+    </div>
+  </div>
+
+  <div class="game-wrap" (click)="action()"
+       (pointerdown)="onPointer($event)" (pointermove)="onPointer($event)">
+    <div class="game-scoreboard">
+      <span>HI {{ high | number:'5.0-0' }}</span>
+      <span>{{ displayScore | number:'5.0-0' }}</span>
+    </div>
+
+    <canvas #canvas class="game-canvas"></canvas>
+
+    <!-- overlay messages -->
+    <div class="game-overlay" *ngIf="state==='idle'">
+      <app-mascot [size]="80" mood="wave" [animate]="true"></app-mascot>
+      <div class="game-msg">{{ 'แตะเพื่อเริ่ม!' | t }}</div>
+      <div class="game-sub">{{ (mode === 'jump' ? 'กระโดดข้ามสิ่งกีดขวาง' : 'หลบสิ่งกีดขวางซ้าย-ขวา') | t }}</div>
+    </div>
+
+    <div class="game-overlay" *ngIf="state==='over'">
+      <app-mascot [size]="80" mood="sleep"></app-mascot>
+      <div class="game-msg game-msg--over">GAME OVER</div>
+      <div class="game-sub">{{ 'คะแนน' | t }} {{ displayScore }} · {{ 'สูงสุด' | t }} {{ high }}</div>
+      <button class="btn btn-primary" (click)="action(); $event.stopPropagation()">
+        <span class="mi mi-sm">replay</span> {{ 'เล่นอีกครั้ง' | t }}
+      </button>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:var(--text-muted);font-size:.82rem;margin-top:12px">
+    🐾 {{ 'พักสมองสักครู่ แล้วกลับไปลุยซ้อมต่อ!' | t }}
+  </p>
+</div>

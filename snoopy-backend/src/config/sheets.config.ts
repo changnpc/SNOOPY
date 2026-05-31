@@ -11,9 +11,11 @@ export const SHEETS = {
   EVENTS:         'events',
   ACTIVITIES:     'activities',
   PRACTICE_LINKS: 'practice_links',
-  NOTIFICATIONS:       'notifications',
-  AUDIT_LOG:           'audit_log',
-  ROLE_PERMISSIONS:    'role_permissions',
+  NOTIFICATIONS:          'notifications',
+  AUDIT_LOG:              'audit_log',
+  ROLE_PERMISSIONS:       'role_permissions',
+  COMPETITIONS:           'competitions',
+  COMPETITION_RESULTS:    'competition_results',
 } as const;
 
 // ── Lazy initialization — only creates client when first API call is made ──

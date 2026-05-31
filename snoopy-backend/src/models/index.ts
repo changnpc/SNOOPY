@@ -42,6 +42,41 @@ export interface ApiSuccess<T> { success: true; data: T; message?: string; }
 export interface ApiError { success: false; error: { code: string; message: string; details?: unknown }; }
 export type ApiResponse<T> = ApiSuccess<T> | ApiError;
 
+export type CompetitionLevel = 'regional' | 'national' | 'international';
+export type AwardType = string; // 'Gold' | 'Silver' | 'Bronze' | 'Special' | 'เข้าร่วม' | ''
+
+export interface Competition {
+  competition_id: string;
+  name: string;
+  level: CompetitionLevel;
+  location: string;
+  date_from: string;
+  date_to: string;
+  organizer: string;
+  note?: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type CompetitionResultStatus = 'Pending' | 'Approved' | 'Rejected';
+
+export interface CompetitionResult {
+  result_id: string;
+  competition_id: string;   // optional FK; free-text name stored here when no linked competition
+  competition_name: string; // free-text display name (required)
+  user_id: string;
+  category: string;
+  rank: number | string;
+  award: AwardType;
+  score: string;
+  status: CompetitionResultStatus;
+  note?: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export function ok<T>(data: T, message?: string): ApiSuccess<T> {
   return { success: true, data, message };
 }
