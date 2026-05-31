@@ -1,0 +1,17 @@
+<ng-container *ngIf="svc.options$ | async as opts">
+  <div class="modal-overlay confirm-overlay" (click)="cancel()">
+    <div class="modal-container modal-sm confirm-dialog" (click)="$event.stopPropagation()">
+      <div class="confirm-icon" [class.danger]="opts.danger">
+        <span class="mi">{{ opts.danger ? 'delete_forever' : 'help_outline' }}</span>
+      </div>
+      <div class="confirm-title">{{ opts.title }}</div>
+      <div class="confirm-message">{{ opts.message }}</div>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" (click)="cancel()">{{ 'ยกเลิก' | t }}</button>
+        <button class="btn" [class.btn-danger]="opts.danger" [class.btn-primary]="!opts.danger" (click)="confirm()">
+          {{ opts.confirmLabel || ('ยืนยัน' | t) }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

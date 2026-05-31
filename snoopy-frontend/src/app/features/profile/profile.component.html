@@ -1,0 +1,94 @@
+<div class="page-header">
+  <div>
+    <h2>{{ 'โปรไฟล์ของฉัน' | t }}</h2>
+    <p>{{ 'ข้อมูลบัญชีและการตั้งค่า' | t }}</p>
+  </div>
+</div>
+
+<div class="profile-wrap" *ngIf="user">
+  <!-- Hero card -->
+  <div class="card profile-hero">
+    <div class="profile-hero-bg"></div>
+    <img [src]="user | avatar:160" class="profile-avatar" alt="avatar" />
+    <div class="profile-hero-main">
+      <h2 class="profile-name">{{ fullThName }}</h2>
+      <div class="profile-enname">{{ fullEnName }}</div>
+      <div class="profile-badges">
+        <span class="badge" [ngClass]="user.role | roleBadge">{{ user.role | t }}</span>
+        <span class="badge badge-primary" *ngIf="teamName">{{ teamName }}</span>
+        <span class="badge badge-subteam" *ngIf="subTeamName">{{ subTeamName }}</span>
+        <span class="badge" [class.badge-success]="user.is_active" [class.badge-gray]="!user.is_active">
+          {{ (user.is_active ? 'ใช้งานอยู่' : 'ระงับ') | t }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info card -->
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="mi mi-sm">badge</span> {{ 'ข้อมูลส่วนตัว' | t }}</span></div>
+    <div class="card-body">
+      <div class="profile-info-grid">
+        <div class="profile-info-item">
+          <span class="profile-info-label"><span class="mi mi-sm">mail</span> {{ 'อีเมล' | t }}</span>
+          <span class="profile-info-value">{{ user.email || '—' }}</span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label"><span class="mi mi-sm">call</span> {{ 'เบอร์โทร' | t }}</span>
+          <span class="profile-info-value">{{ user.phone || '—' }}</span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label"><span class="mi mi-sm">cake</span> {{ 'วันเกิด' | t }}</span>
+          <span class="profile-info-value">{{ (user.birth_date | locDate:'long') }}</span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label"><span class="mi mi-sm">shield_person</span> {{ 'ทีม' | t }}</span>
+          <span class="profile-info-value">{{ teamName || '—' }}<span *ngIf="subTeamName"> · {{ subTeamName }}</span></span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label"><span class="mi mi-sm">login</span> {{ 'เข้าสู่ระบบล่าสุด' | t }}</span>
+          <span class="profile-info-value">{{ (user.last_login | locDate:'datetime') }}</span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label"><span class="mi mi-sm">person_add</span> {{ 'เป็นสมาชิกตั้งแต่' | t }}</span>
+          <span class="profile-info-value">{{ (user.created_at | locDate:'long') }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preferences card -->
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="mi mi-sm">tune</span> {{ 'การตั้งค่า' | t }}</span></div>
+    <div class="card-body">
+      <div class="profile-pref-row">
+        <div>
+          <div class="profile-pref-title">{{ 'ภาษา' | t }}</div>
+          <div class="profile-pref-sub">{{ (langSvc.lang$ | async) === 'en' ? 'English' : 'ไทย' }}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" (click)="langSvc.toggle()">
+          <span class="mi mi-sm">translate</span> {{ (langSvc.lang$ | async) === 'en' ? 'เปลี่ยนเป็นไทย' : 'Switch to English' }}
+        </button>
+      </div>
+      <div class="profile-pref-row">
+        <div>
+          <div class="profile-pref-title">{{ 'ธีม' | t }}</div>
+          <div class="profile-pref-sub">{{ ((theme.theme$ | async) === 'dark' ? 'โหมดมืด' : 'โหมดสว่าง') | t }}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" (click)="theme.toggle()">
+          <span class="mi mi-sm">{{ (theme.theme$ | async) === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+          {{ ((theme.theme$ | async) === 'dark' ? 'โหมดสว่าง' : 'โหมดมืด') | t }}
+        </button>
+      </div>
+      <div class="profile-pref-row">
+        <div>
+          <div class="profile-pref-title">{{ 'ออกจากระบบ' | t }}</div>
+          <div class="profile-pref-sub">{{ 'ออกจากบัญชีนี้' | t }}</div>
+        </div>
+        <button class="btn btn-danger btn-sm" (click)="logout()">
+          <span class="mi mi-sm">logout</span> {{ 'ออกจากระบบ' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

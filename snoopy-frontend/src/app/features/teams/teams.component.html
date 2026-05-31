@@ -1,0 +1,269 @@
+<div class="page-header">
+  <div><h2>{{ 'จัดการทีม' | t }}</h2><p>{{ langSvc.lang==='en' ? 'Total '+teams.length+' teams' : 'ทีมทั้งหมด '+teams.length+' ทีม' }}</p></div>
+  <div class="page-header-actions">
+    <button *ngIf="auth.isAdmin" class="btn btn-primary" (click)="openCreate()">
+      <span class="mi mi-sm">add</span>
+      {{ 'สร้างทีมใหม่' | t }}
+    </button>
+  </div>
+</div>
+
+<div *ngIf="loading" style="text-align:center;padding:60px;color:var(--text-muted)">{{ 'กำลังโหลด...' | t }}</div>
+
+<!-- Big Team Cards -->
+<div *ngIf="!loading" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px">
+  <div *ngFor="let team of teams; trackBy: trackByTeamId" class="team-card" style="cursor:pointer" (click)="openDetail(team)">
+    <div class="team-card-header">
+      <div class="team-card-icon">
+        <span class="mi" style="color:#fff">shield_person</span>
+      </div>
+      <div style="flex:1">
+        <div class="team-card-name">{{ team.team_name }}</div>
+        <div class="team-card-desc">{{ team.description || noDescLabel() }}</div>
+      </div>
+      <button *ngIf="auth.isAdmin" class="btn-icon" style="color:rgba(255,255,255,.7)" (click)="openEdit(team, $event)" title="แก้ไข">
+        <span class="mi mi-sm">edit</span>
+      </button>
+      <button *ngIf="auth.isAdmin && team.members.length===0 && getSubTeamsOf(team.team_id).length===0" class="btn-icon" style="color:rgba(255,150,150,.7)" (click)="delete(team, $event)" title="ลบ">
+        <span class="mi mi-sm">delete</span>
+      </button>
+    </div>
+    <div class="team-card-body">
+      <!-- Sub-team chips -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span *ngFor="let s of getSubTeamsOf(team.team_id); trackBy: trackByTeamId" class="badge badge-subteam" style="font-size:.72rem">
+          {{ s.team_name }} · {{ memberCountLabel(countInSubTeam(s.team_id)) }}
+        </span>
+        <span *ngIf="getSubTeamsOf(team.team_id).length === 0" style="font-size:.8rem;color:var(--text-muted)">{{ 'ยังไม่มีทีมย่อย' | t }}</span>
+      </div>
+      <div style="font-size:.85rem;color:var(--text-secondary);margin-bottom:10px">
+        {{ membersLabel(team.members.length) }}
+        <span *ngIf="getSubTeamsOf(team.team_id).length > 0" style="color:var(--text-muted)"> · {{ subteamCountLabel(getSubTeamsOf(team.team_id).length) }}</span>
+      </div>
+      <div *ngFor="let m of team.members.slice(0,4); trackBy: trackByUserId" class="team-member-row">
+        <img [src]="m | avatar:40" class="avatar avatar-sm" />
+        <div style="flex:1;min-width:0;font-size:.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.th_prefix }}{{ m.th_first_name }} {{ m.th_last_name }}</div>
+        <span *ngIf="m.sub_team_id" class="badge badge-subteam" style="font-size:.68rem">{{ getSubTeamName(m.sub_team_id) }}</span>
+        <span class="badge" [class.badge-role-coach]="m.role==='Coach'" [class.badge-role-player]="m.role==='Player'" style="font-size:.7rem">{{ m.role }}</span>
+      </div>
+      <div *ngIf="team.members.length>4" style="font-size:.82rem;color:var(--text-muted);text-align:center;padding:8px 0">{{ moreLabel(team.members.length-4) }}</div>
+      <div *ngIf="team.members.length===0" style="text-align:center;color:var(--text-muted);font-size:.85rem;padding:16px">{{ 'ยังไม่มีสมาชิก' | t }}</div>
+      <div class="team-stat-row">
+        <span>{{ 'โค้ช' | t }} <strong>{{ getCoaches(team).length }}</strong></span>
+        <span>{{ 'นักกีฬา ' | t }}<strong>{{ getPlayers(team).length }}</strong></span>
+        <span class="badge" [class.badge-success]="team.is_active" [class.badge-gray]="!team.is_active">{{ (team.is_active ? 'ใช้งาน' : 'ปิดใช้') | t }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Team Detail Modal ─────────────────────────────────────── -->
+<div class="modal-overlay" *ngIf="showDetail && detailTeam" (click)="closeDetail()">
+  <div class="modal-container modal-lg" style="max-height:88vh;display:flex;flex-direction:column" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="team-card-icon" style="width:36px;height:36px">
+          <span class="mi mi-sm" style="color:#fff">shield_person</span>
+        </div>
+        <div>
+          <h3 class="modal-title" style="margin:0">{{ detailTeam.team_name }}</h3>
+          <div style="font-size:.82rem;color:var(--text-muted)">
+            {{ detailSummaryLabel(detailTeam) }}
+          </div>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeDetail()"><span class="mi mi-sm">close</span></button>
+    </div>
+
+    <!-- Tabs -->
+    <div style="border-bottom:1px solid var(--border)">
+      <div class="tabs" style="padding:0 20px;margin:0;border:none">
+        <button class="tab-btn" [class.active]="detailTab==='members'" (click)="detailTab='members';showAddPanel=false">
+          {{ 'สมาชิก' | t }} <span class="tab-badge" *ngIf="detailTeam.members.length>0">{{ detailTeam.members.length }}</span>
+        </button>
+        <button class="tab-btn" [class.active]="detailTab==='subteams'" (click)="detailTab='subteams';showAddPanel=false">
+          {{ 'ทีมย่อย' | t }} <span class="tab-badge" *ngIf="getSubTeamsOf(detailTeam.team_id).length>0">{{ getSubTeamsOf(detailTeam.team_id).length }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto">
+
+      <!-- ── Members Tab ──────────────────────── -->
+      <div *ngIf="detailTab==='members'" style="padding:20px 24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <span style="font-weight:700;font-size:.95rem">{{ 'สมาชิกปัจจุบัน' | t }}</span>
+          <button *ngIf="auth.isAdmin" class="btn btn-primary btn-sm" (click)="showAddPanel=!showAddPanel;addSearch=''">
+            <span class="mi mi-sm">add</span>
+            {{ 'เพิ่มสมาชิก' | t }}
+          </button>
+        </div>
+
+        <div *ngIf="detailTeam.members.length === 0" style="text-align:center;color:var(--text-muted);padding:32px">{{ 'ยังไม่มีสมาชิกในทีม' | t }}</div>
+
+        <div *ngFor="let m of detailTeam.members; trackBy: trackByUserId" class="team-detail-member-row">
+          <img [src]="m | avatar:40" class="avatar avatar-sm" />
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.9rem">{{ m.th_prefix }}{{ m.th_first_name }} {{ m.th_last_name }}</div>
+            <div style="font-size:.78rem;color:var(--text-muted)">{{ m.en_first_name }} {{ m.en_last_name }}</div>
+          </div>
+          <!-- Sub-team badge (click to assign — Admin only) -->
+          <ng-container *ngIf="m.role === 'Player'">
+            <span *ngIf="!auth.isAdmin" class="badge" [class.badge-subteam]="!!m.sub_team_id" style="font-size:.72rem">
+              {{ m.sub_team_id ? getSubTeamName(m.sub_team_id) : mainTeamLabel() }}
+            </span>
+            <button *ngIf="auth.isAdmin" class="badge" [class.badge-subteam]="!!m.sub_team_id" style="font-size:.72rem;cursor:pointer;border:1px dashed var(--border);gap:4px"
+              (click)="openAssign(m)" title="กำหนดทีมย่อย">
+              {{ m.sub_team_id ? getSubTeamName(m.sub_team_id) : mainTeamLabel() }}
+              <span class="mi mi-sm">edit</span>
+            </button>
+          </ng-container>
+          <span class="badge" [class.badge-role-coach]="m.role==='Coach'" [class.badge-role-player]="m.role==='Player'">{{ m.role }}</span>
+          <button *ngIf="auth.isAdmin" class="btn-icon" style="color:var(--danger)" title="ลบออกจากทีม" (click)="removeMember(m)">
+            <span class="mi mi-sm">delete</span>
+          </button>
+        </div>
+
+        <!-- Add Member Panel -->
+        <div *ngIf="showAddPanel && auth.isAdmin" style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
+          <div style="font-weight:700;font-size:.9rem;margin-bottom:10px">{{ 'เพิ่มสมาชิกเข้าทีม' | t }}</div>
+          <div class="search-wrap" style="margin-bottom:10px">
+            <span class="search-icon mi mi-sm">search</span>
+            <input class="form-control search-input" [placeholder]="'ค้นหาชื่อ...' | t" [(ngModel)]="addSearch" />
+          </div>
+          <div *ngIf="availableUsers.length === 0" style="text-align:center;color:var(--text-muted);font-size:.85rem;padding:12px">{{ 'ไม่พบสมาชิกที่สามารถเพิ่มได้' | t }}</div>
+          <div style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:2px">
+            <div *ngFor="let u of availableUsers; trackBy: trackByUserId" class="team-detail-member-row">
+              <img [src]="u | avatar:40" class="avatar avatar-sm" />
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:600;font-size:.88rem">{{ u.th_prefix }}{{ u.th_first_name }} {{ u.th_last_name }}</div>
+                <div style="font-size:.75rem;color:var(--text-muted)">{{ (u.team_id ? 'ย้ายจากทีมอื่น' : 'ยังไม่มีทีม') | t }}</div>
+              </div>
+              <span class="badge" [class.badge-role-coach]="u.role==='Coach'" [class.badge-role-player]="u.role==='Player'">{{ u.role }}</span>
+              <button class="btn btn-primary btn-sm" [disabled]="addingSaving" (click)="addMember(u)"><span class="mi mi-sm">add</span> {{ 'เพิ่ม' | t }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Sub-teams Tab ────────────────────── -->
+      <div *ngIf="detailTab==='subteams'" style="padding:20px 24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <span style="font-weight:700;font-size:.95rem">{{ subteamInLabel(detailTeam.team_name) }}</span>
+          <button *ngIf="auth.isAdmin" class="btn btn-primary btn-sm" (click)="openCreateSubTeam()">
+            <span class="mi mi-sm">add</span>
+            {{ 'สร้างทีมย่อย' | t }}
+          </button>
+        </div>
+
+        <div *ngIf="getSubTeamsOf(detailTeam.team_id).length === 0" style="text-align:center;color:var(--text-muted);padding:32px">
+          {{ 'ยังไม่มีทีมย่อย' | t }}
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div *ngFor="let s of getSubTeamsOf(detailTeam.team_id); trackBy: trackByTeamId" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center">
+                <span class="mi mi-sm" style="color:var(--primary)">groups</span>
+              </div>
+              <div style="flex:1">
+                <div style="font-weight:700;font-size:.92rem">{{ s.team_name }}</div>
+                <div style="font-size:.78rem;color:var(--text-muted)">{{ s.description || noDescLabel() }}</div>
+              </div>
+              <span style="font-size:.85rem;color:var(--text-secondary);font-weight:600">{{ memberCountLabel(getMembersOfSubTeam(s.team_id).length) }}</span>
+              <button *ngIf="auth.isAdmin" class="btn-icon" style="color:var(--text-muted)" (click)="openEditSubTeam(s, $event)" title="แก้ไข">
+                <span class="mi mi-sm">edit</span>
+              </button>
+              <button *ngIf="auth.isAdmin && getMembersOfSubTeam(s.team_id).length===0" class="btn-icon" style="color:var(--danger)" (click)="deleteSubTeam(s, $event)" title="ลบ">
+                <span class="mi mi-sm">delete</span>
+              </button>
+            </div>
+            <!-- Members of this sub-team -->
+            <div style="display:flex;flex-wrap:wrap;gap:6px;padding-left:42px">
+              <div *ngFor="let m of getMembersOfSubTeam(s.team_id); trackBy: trackByUserId" style="display:flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px 8px 2px 4px">
+                <img [src]="m | avatar:40" style="width:20px;height:20px;border-radius:50%;object-fit:cover" />
+                <span style="font-size:.75rem;font-weight:600">{{ m.th_first_name }}</span>
+              </div>
+              <div *ngIf="getMembersOfSubTeam(s.team_id).length===0" style="font-size:.8rem;color:var(--text-muted)">{{ 'ยังไม่มีสมาชิก' | t }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeDetail()">{{ 'ปิด' | t }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Assign Sub-team Modal ──────────────────────────────────── -->
+<div class="modal-overlay" *ngIf="assigningUser" (click)="assigningUser=null">
+  <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ 'กำหนดทีมย่อย' | t }}</h3>
+      <button class="modal-close" (click)="assigningUser=null"><span class="mi mi-sm">close</span></button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:12px;color:var(--text-secondary)">{{ assigningUser!.th_prefix }}{{ assigningUser!.th_first_name }} {{ assigningUser!.th_last_name }}</p>
+      <div class="form-group">
+        <label class="form-label">{{ 'ทีมย่อย' | t }}</label>
+        <app-select [(ngModel)]="assignSubTeamId" [options]="assignSubTeamOptions" [placeholder]="'— ทีมใหญ่ (ไม่ระบุทีมย่อย) —' | t" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="confirmAssign()">{{ 'บันทึก' | t }}</button>
+      <button class="btn btn-ghost" (click)="assigningUser=null">{{ 'ยกเลิก' | t }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Create/Edit Big Team Modal ────────────────────────────── -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ (editing ? 'แก้ไขทีม' : 'สร้างทีมใหม่') | t }}</h3>
+      <button class="modal-close" (click)="showModal=false"><span class="mi mi-sm">close</span></button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="form">
+        <div class="form-group"><label class="form-label">{{ 'ชื่อทีม' | t }} <span class="required">*</span></label><input class="form-control" formControlName="team_name" [placeholder]="'เช่น U16' | t" /></div>
+        <div class="form-group"><label class="form-label">{{ 'คำอธิบาย' | t }}</label><textarea class="form-control" formControlName="description" rows="2"></textarea></div>
+        <div *ngIf="editing" class="form-group">
+          <label class="form-label">{{ 'สถานะ' | t }}</label>
+          <app-select formControlName="is_active" [allowEmpty]="false" [options]="[{value:'true',label:'ใช้งาน'},{value:'false',label:'ปิดใช้'}]" />
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving||form.invalid">{{ (saving ? 'กำลังบันทึก...' : 'บันทึก') | t }}</button>
+      <button class="btn btn-ghost" (click)="showModal=false">{{ 'ยกเลิก' | t }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Create/Edit Sub-team Modal ────────────────────────────── -->
+<div class="modal-overlay" *ngIf="showSubModal" (click)="showSubModal=false">
+  <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ (editingSubTeam ? 'แก้ไขทีมย่อย' : 'สร้างทีมย่อยใหม่') | t }}</h3>
+      <button class="modal-close" (click)="showSubModal=false"><span class="mi mi-sm">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="!editingSubTeam" class="alert alert-info" style="margin-bottom:12px">
+        <div class="alert-icon mi mi-sm">info</div>
+        <div>ทีมย่อยของ <strong>{{ detailTeam?.team_name }}</strong></div>
+      </div>
+      <form [formGroup]="subForm">
+        <div class="form-group"><label class="form-label">ชื่อทีมย่อย <span class="required">*</span></label><input class="form-control" formControlName="team_name" [placeholder]="'เช่น กลุ่ม A' | t" /></div>
+        <div class="form-group"><label class="form-label">{{ 'คำอธิบาย' | t }}</label><textarea class="form-control" formControlName="description" rows="2"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="saveSubTeam()" [disabled]="subSaving||subForm.invalid">{{ (subSaving ? 'กำลังบันทึก...' : 'บันทึก') | t }}</button>
+      <button class="btn btn-ghost" (click)="showSubModal=false">{{ 'ยกเลิก' | t }}</button>
+    </div>
+  </div>
+</div>

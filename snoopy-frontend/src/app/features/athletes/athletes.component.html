@@ -1,0 +1,176 @@
+<div class="page-header">
+  <div>
+    <h2>{{ 'โปรไฟล์นักกีฬา' | t }}</h2>
+    <p>นักกีฬาทั้งหมด {{ users.length }} คน</p>
+  </div>
+  <div class="page-header-actions">
+    <button *ngIf="canManage" class="btn btn-primary" (click)="openCreate()">
+      <span class="mi mi-sm">person_add</span>
+      {{ 'เพิ่มนักกีฬา' | t }}
+    </button>
+  </div>
+</div>
+
+<!-- Team Filter Buttons -->
+<div class="athletes-team-filter">
+  <button class="athletes-team-btn" [class.active]="teamFilter === ''" (click)="selectTeam('')">
+    <span class="athletes-team-btn-name">ทุกทีม</span>
+    <span class="athletes-team-btn-count">{{ users.length }}</span>
+  </button>
+  <button *ngFor="let t of teams; trackBy: trackByTeamId" class="athletes-team-btn" [class.active]="teamFilter === t.team_id" (click)="selectTeam(t.team_id)">
+    <span class="athletes-team-btn-name">{{ t.team_name }}</span>
+    <span class="athletes-team-btn-count">{{ countInTeam(t.team_id) }}</span>
+  </button>
+</div>
+
+<!-- Sub-team Filter (shows only when a big team is selected and has sub-teams) -->
+<div *ngIf="teamFilter && getSubTeamsOf(teamFilter).length > 0" class="athletes-team-filter" style="margin-top:10px;padding:10px 16px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)">
+  <span style="font-size:.8rem;color:var(--text-muted);margin-right:8px;white-space:nowrap">ทีมย่อย:</span>
+  <button class="athletes-team-btn" [class.active]="subTeamFilter === ''" (click)="selectSubTeam('')" style="font-size:.78rem;padding:3px 10px">
+    <span class="athletes-team-btn-name">ทั้งหมด</span>
+    <span class="athletes-team-btn-count">{{ countInTeam(teamFilter) }}</span>
+  </button>
+  <button *ngFor="let s of getSubTeamsOf(teamFilter); trackBy: trackByTeamId" class="athletes-team-btn" [class.active]="subTeamFilter === s.team_id" (click)="selectSubTeam(s.team_id)" style="font-size:.78rem;padding:3px 10px">
+    <span class="athletes-team-btn-name">{{ s.team_name }}</span>
+    <span class="athletes-team-btn-count">{{ countInSubTeam(s.team_id) }}</span>
+  </button>
+</div>
+
+<!-- Search -->
+<div class="filter-bar" style="margin-top:16px">
+  <div class="search-wrap" style="flex:1">
+    <span class="search-icon mi mi-sm">search</span>
+    <input class="form-control search-input" [placeholder]="'ค้นหาชื่อ อีเมล...' | t" [(ngModel)]="search" (input)="applyFilter()" />
+  </div>
+</div>
+
+<!-- Loading -->
+<div *ngIf="loading" style="text-align:center;padding:60px;color:var(--text-muted)">{{ 'กำลังโหลด...' | t }}</div>
+
+<!-- Grid -->
+<div *ngIf="!loading" class="athletes-grid">
+  <div *ngIf="filtered.length === 0" style="grid-column:1/-1">
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      </div>
+      <div class="empty-state-title">ไม่พบนักกีฬา</div>
+    </div>
+  </div>
+
+  <div *ngFor="let u of filtered; trackBy: trackByUserId" class="athlete-card" (click)="openDetail(u)">
+    <div class="athlete-card-avatar-wrap">
+      <img [src]="u | avatar" class="athlete-card-avatar" />
+      <span class="athlete-status-dot" [class.active]="u.is_active"></span>
+    </div>
+    <div class="athlete-card-name">{{ u.th_prefix }}{{ u.th_first_name }} {{ u.th_last_name }}</div>
+    <div class="athlete-card-en">{{ u.en_first_name }} {{ u.en_last_name }}</div>
+    <div class="athlete-card-meta">
+      <span class="badge badge-gold">{{ (u.team_id | teamName) }}</span>
+      <span *ngIf="u.sub_team_id" class="badge badge-subteam" style="font-size:.68rem">{{ getSubTeamName(u.sub_team_id) }}</span>
+      <span *ngIf="!u.is_active" class="badge badge-gray">ไม่ใช้งาน</span>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" *ngIf="showDetailModal" (click)="showDetailModal=false">
+  <div class="modal-container" (click)="$event.stopPropagation()" *ngIf="selectedUser">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ 'โปรไฟล์นักกีฬา' | t }}</h3>
+      <button class="modal-close" (click)="showDetailModal=false"><span class="mi mi-sm">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:20px">
+        <img [src]="selectedUser | avatar" class="avatar" style="width:80px;height:80px;border-width:3px;border-color:var(--primary)" />
+        <div>
+          <h3 style="font-size:1.2rem;font-weight:800;color:var(--primary)">{{ selectedUser.th_prefix }}{{ selectedUser.th_first_name }} {{ selectedUser.th_last_name }}</h3>
+          <div style="color:var(--text-secondary)">{{ selectedUser.en_first_name }} {{ selectedUser.en_last_name }}</div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+            <span class="badge badge-gold">{{ (selectedUser.team_id | teamName) }}</span>
+            <span class="badge" [class.badge-success]="selectedUser.is_active" [class.badge-gray]="!selectedUser.is_active">{{ (selectedUser.is_active ? 'ใช้งานอยู่' : 'ไม่ใช้งาน') | t }}</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.9rem">
+        <div><span style="color:var(--text-muted)">{{ 'อีเมล' | t }}:</span><br/><strong>{{ selectedUser.email }}</strong></div>
+        <div *ngIf="canSeePhone(selectedUser)">
+          <span style="color:var(--text-muted)">{{ 'เบอร์โทร' | t }}:</span><br/>
+          <strong>{{ selectedUser.phone || '—' }}</strong>
+        </div>
+        <div><span style="color:var(--text-muted)">{{ 'ทีม' | t }}:</span><br/><strong>{{ (selectedUser.team_id | teamName) }}</strong></div>
+        <div *ngIf="canSeeBirthDate">
+          <span style="color:var(--text-muted)">{{ 'วันเกิด' | t }}:</span><br/>
+          <strong>{{ selectedUser.birth_date || '—' }}</strong>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button *ngIf="canManage" class="btn btn-primary btn-sm" (click)="openEdit(selectedUser);showDetailModal=false">{{ 'แก้ไขข้อมูล' | t }}</button>
+      <button *ngIf="canManage && selectedUser.is_active" class="btn btn-ghost btn-sm" (click)="deactivate(selectedUser)">{{ 'ระงับบัญชี' | t }}</button>
+      <button class="btn btn-ghost btn-sm" (click)="showDetailModal=false">{{ 'ปิด' | t }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ (selectedUser ? 'แก้ไขข้อมูลนักกีฬา' : 'เพิ่มนักกีฬาใหม่') | t }}</h3>
+      <button class="modal-close" (click)="showModal=false"><span class="mi mi-sm">close</span></button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">คำนำหน้า</label>
+            <app-select formControlName="th_prefix" [allowEmpty]="false" [options]="[{value:'นาย',label:'นาย'},{value:'นาง',label:'นาง'},{value:'นางสาว',label:'นางสาว'},{value:'เด็กชาย',label:'เด็กชาย'},{value:'เด็กหญิง',label:'เด็กหญิง'}]" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">{{ 'ทีม' | t }} <span class="required">*</span></label>
+            <app-select formControlName="team_id" [options]="teamSelectOptions" [placeholder]="'เลือกทีม' | t" />
+          </div>
+          <div class="form-group" *ngIf="form.get('team_id')?.value && getSubTeamsOf(form.get('team_id')?.value).length > 0">
+            <label class="form-label">{{ 'ทีมย่อย' | t }}</label>
+            <app-select formControlName="sub_team_id" [options]="subTeamSelectOptions" [placeholder]="'— ไม่ระบุทีมย่อย —' | t" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">ชื่อ (ไทย) <span class="required">*</span></label>
+            <input class="form-control" formControlName="th_first_name" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">นามสกุล (ไทย) <span class="required">*</span></label>
+            <input class="form-control" formControlName="th_last_name" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name (EN)</label>
+            <input class="form-control" formControlName="en_first_name" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name (EN)</label>
+            <input class="form-control" formControlName="en_last_name" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email <span class="required">*</span></label>
+            <input class="form-control" type="email" formControlName="email" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">เบอร์โทรศัพท์</label>
+            <input class="form-control" formControlName="phone" placeholder="0812345678" />
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving">{{ (saving ? 'กำลังบันทึก...' : 'บันทึก') | t }}</button>
+      <button class="btn btn-ghost" (click)="showModal=false">{{ 'ยกเลิก' | t }}</button>
+    </div>
+  </div>
+</div>

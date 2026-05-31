@@ -1,0 +1,134 @@
+<div class="page-header">
+  <div><h2>{{ 'เช็กชื่อนักกีฬา' | t }}</h2><p>{{ 'บันทึกการมาซ้อมประจำวัน' | t }}</p></div>
+</div>
+
+<!-- ── Filter Section ─────────────────────────── -->
+<div class="section-card" style="margin-bottom:16px">
+  <div class="section-card-header">
+    <span class="mi mi-sm" style="color:var(--primary)">filter_list</span>
+    <span class="section-card-title">{{ 'ตัวกรอง' | t }}</span>
+  </div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+    <div class="form-group" style="margin:0;min-width:180px">
+      <label class="form-label">{{ 'วันที่' | t }}</label>
+      <app-date-picker [(ngModel)]="selectedDate" (ngModelChange)="loadSheet()" [placeholder]="'เลือกวันที่' | t" />
+    </div>
+    <div *ngIf="auth.isAdmin || auth.role==='Coach'" class="form-group" style="margin:0;min-width:160px">
+      <label class="form-label">{{ 'ทีม' | t }}</label>
+      <app-select [(ngModel)]="selectedTeamId" (ngModelChange)="loadSheet()" [options]="teamOptions" [placeholder]="'เลือกทีม' | t" [allowEmpty]="false" />
+    </div>
+  </div>
+</div>
+
+<!-- Summary -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+  <div style="background:#e8f5e9;border-radius:var(--radius);padding:16px;text-align:center;border:1px solid #2e7d3222">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="#2e7d32"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    <div style="font-size:1.8rem;font-weight:800;color:#2e7d32;margin:4px 0">{{ summary.present }}</div>
+    <div style="font-size:.82rem;color:#2e7d32;font-weight:600">{{ 'มา' | t }}</div>
+  </div>
+  <div style="background:#ffebee;border-radius:var(--radius);padding:16px;text-align:center;border:1px solid #c6282822">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="#c62828"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    <div style="font-size:1.8rem;font-weight:800;color:#c62828;margin:4px 0">{{ summary.absent }}</div>
+    <div style="font-size:.82rem;color:#c62828;font-weight:600">{{ 'ขาด' | t }}</div>
+  </div>
+  <div style="background:#fff8e1;border-radius:var(--radius);padding:16px;text-align:center;border:1px solid #f9a82522">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="#b45309"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+    <div style="font-size:1.8rem;font-weight:800;color:#b45309;margin:4px 0">{{ summary.leave }}</div>
+    <div style="font-size:.82rem;color:#b45309;font-weight:600">{{ 'ลา' | t }}</div>
+  </div>
+  <div style="background:#f0f4f8;border-radius:var(--radius);padding:16px;text-align:center;border:1px solid #90a4ae22">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="#546e7a"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+    <div style="font-size:1.8rem;font-weight:800;color:#546e7a;margin:4px 0">{{ summary.none }}</div>
+    <div style="font-size:.82rem;color:#546e7a;font-weight:600">{{ 'ยังไม่เช็ก' | t }}</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden">
+  <div style="border-bottom:1px solid var(--border)">
+    <div class="tabs" style="padding:0 16px;margin:0;border:none">
+      <button class="tab-btn" [class.active]="activeTab==='sheet'" (click)="activeTab='sheet'">{{ 'เช็กชื่อวันนี้' | t }}</button>
+      <button class="tab-btn" [class.active]="activeTab==='history'" (click)="activeTab='history';loadHistory()">{{ 'ประวัติ' | t }}</button>
+    </div>
+  </div>
+
+  <!-- Sheet Tab -->
+  <div *ngIf="activeTab==='sheet'">
+    <div *ngIf="loading" style="text-align:center;padding:40px;color:var(--text-muted)">{{ 'กำลังโหลด...' | t }}</div>
+    <div *ngIf="!loading && players.length===0" class="empty-state" style="padding:40px"><div class="empty-state-title">{{ 'ไม่มีนักกีฬาในทีมนี้' | t }}</div></div>
+    <div *ngIf="!loading && players.length>0">
+      <!-- Bulk actions bar -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg)">
+        <span style="font-size:.8rem;font-weight:600;color:var(--text-muted);margin-right:4px">{{ 'เช็กชื่อทั้งหมด:' | t }}</span>
+        <button class="btn btn-sm att-bulk-present" (click)="setAll('Present')">
+          <span class="mi mi-sm">check</span> {{ 'มาทุกคน' | t }}
+        </button>
+        <button class="btn btn-sm att-bulk-absent" (click)="setAll('Absent')">
+          <span class="mi mi-sm">close</span> {{ 'ขาดทุกคน' | t }}
+        </button>
+        <button class="btn btn-ghost btn-sm" (click)="setAll('')" style="margin-left:4px">
+          <span class="mi mi-sm">refresh</span> {{ 'รีเซ็ต' | t }}
+        </button>
+        <button class="btn btn-primary btn-sm" style="margin-left:auto" (click)="saveAll()" [disabled]="saving">
+          <span class="mi mi-sm">save</span> {{ (saving ? 'กำลังบันทึก...' : 'บันทึกทั้งหมด') | t }}
+        </button>
+      </div>
+    <div class="table-wrap" style="border:none;border-radius:0">
+      <table class="table">
+        <thead><tr><th>#</th><th>{{ 'นักกีฬา' | t }}</th><th style="text-align:center">{{ 'สถานะ' | t }}</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let row of players; let i=index; trackBy: trackByPlayerId">
+            <td style="color:var(--text-muted);width:40px">{{ i+1 }}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <img [src]="row.user | avatar:40" class="avatar avatar-sm" />
+                <div>
+                  <div style="font-weight:600">{{ row.user.th_prefix }}{{ row.user.th_first_name }} {{ row.user.th_last_name }}</div>
+                  <div style="font-size:.75rem;color:var(--text-muted)">{{ row.user.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td style="text-align:center">
+              <div style="display:flex;gap:6px;justify-content:center">
+                <button *ngFor="let s of ['Present','Absent','Leave']"
+                  class="attendance-status-btn"
+                  [class.active-present]="row.status==='Present' && s==='Present'"
+                  [class.active-absent]="row.status==='Absent'  && s==='Absent'"
+                  [class.active-leave]="row.status==='Leave'   && s==='Leave'"
+                  (click)="setStatus(row, s)">
+                  <span class="mi mi-sm" style="vertical-align:-3px">{{ s==='Present'?'check':s==='Absent'?'close':'event_busy' }}</span>
+                  {{ (s==='Present'?'มา':s==='Absent'?'ขาด':'ลา') | t }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    </div><!-- end players.length>0 -->
+  </div>
+
+  <!-- History Tab -->
+  <div *ngIf="activeTab==='history'" style="padding:16px">
+    <div style="display:flex;gap:12px;margin-bottom:16px;align-items:flex-end">
+      <div style="width:170px"><app-date-picker [(ngModel)]="histFilter.date_from" [placeholder]="'จากวันที่' | t" /></div>
+      <div style="width:170px"><app-date-picker [(ngModel)]="histFilter.date_to" [placeholder]="'ถึงวันที่' | t" /></div>
+      <button class="btn btn-ghost" (click)="loadHistory()">{{ 'ค้นหา' | t }}</button>
+    </div>
+    <div class="table-wrap" style="border:none;border-radius:0">
+      <table class="table">
+        <thead><tr><th>{{ 'วันที่' | t }}</th><th>{{ 'นักกีฬา' | t }}</th><th>{{ 'สถานะ' | t }}</th><th>{{ 'เช็กโดย' | t }}</th></tr></thead>
+        <tbody>
+          <tr *ngIf="history.length===0"><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted)">{{ 'ไม่มีข้อมูล' | t }}</td></tr>
+          <tr *ngFor="let r of history; trackBy: trackByAttendanceId">
+            <td>{{ (r.date | locDate) }}</td>
+            <td>{{ getName(r.player_id) }}</td>
+            <td><span class="badge" [class.badge-success]="r.status==='Present'" [class.badge-danger]="r.status==='Absent'" [class.badge-gold]="r.status==='Leave'">{{ getStatusLabel(r.status) }}</span></td>
+            <td style="font-size:.82rem;color:var(--text-muted)">{{ getName(r.checked_by) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,67 @@
+<aside class="sidebar" [class.collapsed]="collapsed" [class.mobile-open]="mobileOpen">
+
+  <!-- Header -->
+  <div class="sidebar-header">
+    <div class="sidebar-logo" (click)="navigate('/dashboard')" style="cursor:pointer">
+      <svg width="32" height="32" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <rect width="48" height="48" rx="12" fill="rgba(255,255,255,.16)"/>
+        <path d="M17 13c-4.3 3.4-6.8 6-6.8 9.4a3.8 3.8 0 0 0 6 3.1c-.3 1.7-1.1 2.8-2.2 3.6h6.1c-1.1-.8-1.9-1.9-2.2-3.6a3.8 3.8 0 0 0 6-3.1c0-3.4-2.6-6-6.9-9.4Z" fill="#fff"/>
+        <path d="M37 27c-1.9-2-4.7-2-5.8.3-1.1-2.3-3.9-2.3-5.8-.3-2.2 2.4-.8 5.6 5.8 10 6.6-4.4 8-7.6 5.8-10Z" fill="#ffd23f"/>
+      </svg>
+      <span class="sidebar-brand">SNOOPY</span>
+    </div>
+    <button class="sidebar-toggle" (click)="toggleCollapse()">
+      <span class="mi mi-sm">{{ collapsed ? 'chevron_right' : 'menu_open' }}</span>
+    </button>
+  </div>
+
+  <!-- User Info (click → profile) -->
+  <div class="sidebar-userinfo sidebar-userinfo-clickable" *ngIf="auth.currentUser"
+       [class.active]="isActive('/profile')" (click)="navigate('/profile')"
+       [title]="'โปรไฟล์ของฉัน' | t">
+    <img [src]="auth.currentUser.img_avatar_url || 'https://ui-avatars.com/api/?name=User&background=2d7dd2&color=fff&bold=true&size=40'"
+         class="sidebar-avatar" alt="avatar" />
+    <div class="sidebar-usertext">
+      <div class="sidebar-username">{{ auth.currentUser.th_prefix }}{{ auth.currentUser.th_first_name }}</div>
+      <div class="sidebar-role">{{ auth.currentUser.role | t }}</div>
+    </div>
+    <span class="mi mi-sm sidebar-userinfo-chevron">chevron_right</span>
+  </div>
+
+  <!-- Nav -->
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">{{ 'เมนูหลัก' | t }}</div>
+
+    <ng-container *ngFor="let item of navItems; trackBy: trackByPath">
+      <a *ngIf="canSee(item)"
+         class="nav-item"
+         [class.active]="isActive(item.path)"
+         (click)="navigate(item.path)">
+        <span class="nav-icon mi">{{ item.icon }}</span>
+        <span class="nav-text">{{ item.label | t }}</span>
+        <span *ngIf="item.path==='/leave' && pendingLeaveCount > 0 && auth.role !== 'Player'"
+              class="nav-badge nav-badge-warn">{{ pendingLeaveCount }}</span>
+      </a>
+    </ng-container>
+
+    <ng-container *ngIf="auth.isAdmin">
+      <div class="nav-section-label">{{ 'จัดการระบบ' | t }}</div>
+      <a *ngFor="let item of adminItems; trackBy: trackByPath"
+         class="nav-item"
+         [class.active]="isActive(item.path)"
+         (click)="navigate(item.path)">
+        <span class="nav-icon mi">{{ item.icon }}</span>
+        <span class="nav-text">{{ item.label | t }}</span>
+      </a>
+    </ng-container>
+  </nav>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <button class="btn-logout" (click)="logout()">
+      <span class="nav-icon mi">logout</span>
+      <span class="nav-text">{{ 'ออกจากระบบ' | t }}</span>
+    </button>
+  </div>
+
+</aside>

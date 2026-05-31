@@ -1,0 +1,32 @@
+<div class="app-layout">
+  <!-- Sidebar -->
+  <app-sidebar [collapsed]="sidebarCollapsed" [mobileOpen]="mobileOpen"
+               (collapsedChange)="sidebarCollapsed=$event"></app-sidebar>
+
+  <!-- Mobile backdrop -->
+  <div class="sidebar-backdrop" *ngIf="mobileOpen" (click)="mobileOpen=false"></div>
+
+  <!-- Main -->
+  <div class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
+    <app-topbar [pageTitle]="pageTitle" (toggleSidebar)="toggleSidebar()"></app-topbar>
+    <main class="page-content" style="padding:18px 20px;flex:1;overflow-y:auto">
+      <router-outlet></router-outlet>
+
+      <!-- App footer / copyright -->
+      <footer class="app-footer">
+        <span class="app-footer-brand">{{ appName }}</span>
+        <span class="app-footer-sep">·</span>
+        <span>{{ 'เวอร์ชัน' | t }} {{ appVersion }}</span>
+        <span class="app-footer-sep">·</span>
+        <span>© {{ copyrightYear }} {{ author }}</span>
+        <span class="app-footer-sep">·</span>
+        <a class="app-footer-link" [href]="'mailto:' + authorEmail">{{ authorEmail }}</a>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<!-- Global Toast -->
+<app-toast></app-toast>
+<!-- Global Confirm Dialog -->
+<app-confirm-dialog></app-confirm-dialog>

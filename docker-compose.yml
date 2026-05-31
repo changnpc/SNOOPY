@@ -1,0 +1,56 @@
+# ═══════════════════════════════════════════════════════════════
+#  SNOOPY — Production stack (frontend + backend)
+#  Author: Nattapong PIMPISAN <pimpisan.cblt@gmail.com>
+# ═══════════════════════════════════════════════════════════════
+services:
+  # ── Frontend (Angular + Nginx) ────────────────────────────
+  frontend:
+    build:
+      context: ./snoopy-frontend
+      dockerfile: Dockerfile
+    image: snoopy-frontend:1.0.0
+    container_name: snoopy-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - snoopy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Backend (Node.js + Express) ───────────────────────────
+  backend:
+    build:
+      context: ./snoopy-backend
+      dockerfile: Dockerfile
+    image: snoopy-backend:1.0.0
+    container_name: snoopy-backend
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - TRUST_PROXY_HOPS=1
+      - GOOGLE_SERVICE_ACCOUNT_KEY_PATH=/app/credentials/service-account.json
+    env_file:
+      - .env
+    volumes:
+      - ./credentials:/app/credentials:ro
+    networks:
+      - snoopy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  snoopy-network:
+    driver: bridge

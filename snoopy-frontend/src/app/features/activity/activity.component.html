@@ -1,0 +1,100 @@
+<div class="page-header">
+  <div><h2>{{ 'กิจกรรม' | t }}</h2><p>{{ 'ข่าวสารและกิจกรรมของทีมชาติ' | t }}</p></div>
+  <div class="page-header-actions">
+    <button *ngIf="auth.isAdmin" class="btn btn-primary" (click)="openCreate()"><span class="mi mi-sm">add</span> {{ 'สร้างกิจกรรม' | t }}</button>
+  </div>
+</div>
+
+<div *ngIf="loading" style="text-align:center;padding:60px;color:var(--text-muted)">{{ 'กำลังโหลด...' | t }}</div>
+
+<div class="activity-list" *ngIf="!loading">
+  <div *ngIf="activities.length===0"><div class="empty-state"><div class="empty-state-title">{{ 'ยังไม่มีกิจกรรม' | t }}</div></div></div>
+
+  <div *ngFor="let a of activities; let i = index; trackBy: trackByActivityId" class="act-card" [attr.data-color]="colorClass(i)">
+    <div class="act-card-side">
+      <span class="act-card-icon mi">{{ cardIcon(a) }}</span>
+    </div>
+    <div class="act-card-body">
+      <!-- meta row -->
+      <div class="act-card-meta">
+        <span class="act-badge act-badge-date">
+          <span class="mi mi-sm">calendar_today</span>
+          {{ (a.date_from | locDate) }}{{ a.date_from !== a.date_to ? ' – ' + (a.date_to | locDate) : '' }}
+        </span>
+        <span *ngIf="a.location" class="act-badge act-badge-loc">
+          <span class="mi mi-sm">location_on</span>{{ a.location }}
+        </span>
+      </div>
+      <!-- title -->
+      <div class="act-card-title">{{ a.title }}</div>
+      <!-- details -->
+      <div class="act-card-detail">{{ a.details }}</div>
+      <!-- footer: links + admin actions on same row -->
+      <div class="act-card-footer" *ngIf="a.url || a.attachment_url || auth.isAdmin">
+        <div class="act-card-links">
+          <a *ngIf="a.url" [href]="a.url | rbLink" target="_blank" rel="noopener" class="act-link act-link-url">
+            <span class="mi mi-sm">open_in_new</span> {{ 'เปิดลิงก์' | t }}
+          </a>
+          <a *ngIf="a.attachment_url" [href]="a.attachment_url" target="_blank" rel="noopener" class="act-link act-link-file">
+            <span class="mi mi-sm">attach_file</span> {{ a.attachment_name || ('ดาวน์โหลดเอกสาร' | t) }}
+          </a>
+        </div>
+        <div *ngIf="auth.isAdmin" class="act-card-actions">
+          <button class="btn btn-ghost btn-sm" (click)="openEdit(a)"><span class="mi mi-sm">edit</span> {{ 'แก้ไข' | t }}</button>
+          <button class="btn btn-danger btn-sm" (click)="delete(a)"><span class="mi mi-sm">delete</span> {{ 'ลบ' | t }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ (editing ? 'แก้ไขกิจกรรม' : 'สร้างกิจกรรม') | t }}</h3>
+      <button class="modal-close" (click)="showModal=false"><span class="mi mi-sm">close</span></button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="form">
+        <div class="form-group">
+          <label class="form-label">{{ 'ชื่อกิจกรรม' | t }} <span class="required">*</span></label>
+          <input class="form-control" formControlName="title" />
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">{{ 'วันเริ่มต้น' | t }} <span class="required">*</span></label><app-date-picker formControlName="date_from"></app-date-picker></div>
+          <div class="form-group"><label class="form-label">{{ 'วันสิ้นสุด' | t }} <span class="required">*</span></label><app-date-picker formControlName="date_to"></app-date-picker></div>
+        </div>
+        <div *ngIf="dateRangeError" class="form-error" style="margin-top:-8px;margin-bottom:12px;color:var(--danger);font-size:.82rem">
+          <span class="mi mi-sm" style="vertical-align:-3px">error_outline</span> {{ 'วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่มต้น' | t }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ 'สถานที่' | t }}</label>
+          <input class="form-control" formControlName="location" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ 'รายละเอียด' | t }} <span class="required">*</span></label>
+          <textarea class="form-control" formControlName="details" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ 'ลิงก์เว็บไซต์' | t }} <span style="font-weight:400;color:var(--text-muted)">({{ 'ไม่บังคับ' | t }})</span></label>
+          <input class="form-control" formControlName="url" placeholder="https://..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ 'เอกสารแนบ' | t }} <span style="font-weight:400;color:var(--text-muted)">({{ 'ไม่บังคับ' | t }} — PDF, Word, Excel)</span></label>
+          <input type="file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" (change)="onAttachment($event)" />
+          <div *ngIf="selectedAttachment" style="margin-top:6px;font-size:.82rem;color:var(--success)">
+            <span class="mi mi-sm" style="vertical-align:-3px">check_circle</span> {{ selectedAttachment.name }}
+          </div>
+          <div *ngIf="editing?.attachment_url && !selectedAttachment" style="margin-top:6px;font-size:.82rem;color:var(--text-muted)">
+            <span class="mi mi-sm" style="vertical-align:-3px">attach_file</span> {{ 'มีเอกสารแนบอยู่แล้ว' | t }}: {{ editing?.attachment_name || ('ดาวน์โหลด' | t) }}
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving||form.invalid">{{ (saving?'กำลังบันทึก...':'บันทึก') | t }}</button>
+      <button class="btn btn-ghost" (click)="showModal=false">{{ 'ยกเลิก' | t }}</button>
+    </div>
+  </div>
+</div>

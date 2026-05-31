@@ -1,0 +1,329 @@
+<div *ngIf="loading" style="display:flex;justify-content:center;padding:60px">
+  <div style="width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite"></div>
+</div>
+
+<ng-container *ngIf="!loading">
+
+  <!-- ════════════════════════════════════════════════════
+       PLAYER DASHBOARD
+  ═══════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="auth.isPlayer">
+
+    <!-- Welcome Banner -->
+    <div class="section-banner" style="margin-bottom:24px">
+      <div class="section-banner-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+      </div>
+      <div>
+        <div class="section-banner-title">{{ 'สวัสดี,' | t }} {{ auth.currentUser?.th_first_name }}! 👋</div>
+        <div class="section-banner-sub">{{ myTeamName ? (('ทีม ' | t) + myTeamName) : '' }} · {{ (today | locDate) }}</div>
+      </div>
+      <div style="margin-left:auto">
+        <button class="btn btn-primary btn-sm" (click)="navigate('/leave')"><span class="mi mi-sm">event_busy</span> {{ 'แจ้งลาซ้อม' | t }}</button>
+      </div>
+    </div>
+
+    <!-- Player Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px">
+      <div class="stat-card" style="--stat-color:#2e7d32;--stat-bg:#e8f5e9">
+        <div class="stat-icon" style="background:#e8f5e9;color:#2e7d32">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ playerStats.teamMates }}</div>
+          <div class="stat-label">{{ 'สมาชิกในทีม' | t }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card" style="--stat-color:#e65100;--stat-bg:#fff3e0;cursor:pointer" (click)="navigate('/leave')">
+        <div class="stat-icon" style="background:#fff3e0;color:#e65100">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6z"/></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ playerStats.myPendingLeave }}</div>
+          <div class="stat-label">{{ 'คำขอลาที่รอดำเนินการ' | t }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card" style="--stat-color:#0288d1;--stat-bg:#e1f5fe;cursor:pointer" (click)="navigate('/calendar')">
+        <div class="stat-icon" style="background:#e1f5fe;color:#0288d1">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ playerStats.upcomingEvents }}</div>
+          <div class="stat-label">{{ 'กิจกรรมที่จะมาถึง' | t }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card" style="--stat-color:#7b1fa2;--stat-bg:#f3e5f5;cursor:pointer" (click)="navigate('/leave')">
+        <div class="stat-icon" style="background:#f3e5f5;color:#7b1fa2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ playerStats.myTotalLeave }}</div>
+          <div class="stat-label">{{ 'คำขอลาทั้งหมด' | t }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions (Player) -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="mi mi-sm" style="color:var(--accent)">bolt</span>
+          {{ 'เมนูด่วน' | t }}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="action-grid">
+          <div class="action-card" (click)="navigate('/leave')">
+            <div class="action-card-icon" style="background:var(--warning-bg);color:var(--warning)"><span class="mi mi-lg">event_busy</span></div>
+            <div class="action-card-label">{{ 'แจ้งลาซ้อม' | t }}</div>
+          </div>
+          <div class="action-card" (click)="navigate('/calendar')">
+            <div class="action-card-icon" style="background:var(--accent-faint);color:var(--accent)"><span class="mi mi-lg">calendar_month</span></div>
+            <div class="action-card-label">{{ 'ปฏิทินกิจกรรม' | t }}</div>
+          </div>
+          <div class="action-card" (click)="navigate('/practice')">
+            <div class="action-card-icon" style="background:var(--primary-faint);color:var(--primary)"><span class="mi mi-lg">link</span></div>
+            <div class="action-card-label">{{ 'ลิงก์ซ้อม' | t }}</div>
+          </div>
+          <div class="action-card" (click)="navigate('/activity')">
+            <div class="action-card-icon" style="background:var(--accent-faint);color:var(--accent-dark)"><span class="mi mi-lg">campaign</span></div>
+            <div class="action-card-label">{{ 'กิจกรรม' | t }}</div>
+          </div>
+          <div class="action-card" (click)="navigate('/athletes')">
+            <div class="action-card-icon" style="background:var(--primary-faint);color:var(--primary)"><span class="mi mi-lg">groups</span></div>
+            <div class="action-card-label">{{ 'เพื่อนร่วมทีม' | t }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Player Bottom Grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <!-- Upcoming Events -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="mi mi-sm" style="color:var(--accent)">calendar_month</span> {{ 'กิจกรรมใกล้มา' | t }}</div>
+          <button class="btn-text-sm" (click)="navigate('/calendar')">{{ 'ดูทั้งหมด' | t }}</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div *ngIf="upcomingEvents.length===0" class="empty-state" style="padding:24px"><div class="empty-state-title">{{ 'ไม่มีกิจกรรม' | t }}</div></div>
+          <div *ngFor="let ev of upcomingEvents; trackBy: trackByEventId" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)">
+            <div [style.background]="ev.color" style="width:10px;height:10px;border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ ev.title }}</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">{{ (ev.start_datetime | locDate) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Leaves -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="mi mi-sm" style="color:var(--warning)">event_busy</span> {{ 'การลาของฉัน' | t }}</div>
+          <button class="btn-text-sm" (click)="navigate('/leave')">{{ 'ดูทั้งหมด' | t }}</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div *ngIf="myLeaves.length===0" class="empty-state" style="padding:24px"><div class="empty-state-title">{{ 'ยังไม่มีรายการลา' | t }}</div></div>
+          <div *ngFor="let lv of myLeaves; trackBy: trackByLeaveId" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.88rem;font-weight:600">{{ (lv.start_date | locDate) }}{{ lv.start_date !== lv.end_date ? ' – ' + (lv.end_date | locDate) : '' }}</div>
+              <div style="font-size:.78rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ lv.reason }}</div>
+            </div>
+            <span class="badge" [ngClass]="statusClass(lv.status)" style="font-size:.72rem">{{ statusLabel(lv.status) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- ════════════════════════════════════════════════════
+       COACH DASHBOARD
+  ═══════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="auth.isCoach">
+
+    <div class="section-banner" style="margin-bottom:24px">
+      <div class="section-banner-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+      </div>
+      <div>
+        <div class="section-banner-title">{{ 'สวัสดี,' | t }} {{ auth.currentUser?.th_prefix }}{{ auth.currentUser?.th_first_name }}!</div>
+        <div class="section-banner-sub">{{ 'โค้ช' | t }} · {{ (today | locDate) }}</div>
+      </div>
+    </div>
+
+    <!-- Coach Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px">
+      <div class="stat-card" style="--stat-color:#2d7dd2;--stat-bg:#e3f1fc;cursor:pointer" (click)="navigate('/athletes')">
+        <div class="stat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+        <div class="stat-content"><div class="stat-value">{{ stats.players }}</div><div class="stat-label">{{ 'นักกีฬาในทีม' | t }}</div></div>
+      </div>
+      <div class="stat-card" style="--stat-color:#2e7d32;--stat-bg:#e8f5e9;cursor:pointer" (click)="navigate('/attendance')">
+        <div class="stat-icon" style="background:#e8f5e9;color:#2e7d32"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg></div>
+        <div class="stat-content"><div class="stat-value">{{ stats.presentToday }}</div><div class="stat-label">{{ 'มาซ้อมวันนี้' | t }}</div></div>
+      </div>
+      <div class="stat-card" style="--stat-color:#e65100;--stat-bg:#fff3e0;cursor:pointer" (click)="navigate('/leave')">
+        <div class="stat-icon" style="background:#fff3e0;color:#e65100"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6z"/></svg></div>
+        <div class="stat-content"><div class="stat-value">{{ stats.pendingLeave }}</div><div class="stat-label">{{ 'คำขอลารอดำเนินการ' | t }}</div></div>
+      </div>
+      <div class="stat-card" style="--stat-color:#0288d1;--stat-bg:#e1f5fe;cursor:pointer" (click)="navigate('/calendar')">
+        <div class="stat-icon" style="background:#e1f5fe;color:#0288d1"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg></div>
+        <div class="stat-content"><div class="stat-value">{{ stats.upcomingEvents }}</div><div class="stat-label">{{ 'กิจกรรมที่จะมาถึง' | t }}</div></div>
+      </div>
+    </div>
+
+    <!-- Quick Actions (Coach) -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-header"><div class="card-title"><span class="mi mi-sm" style="color:var(--accent)">bolt</span> {{ 'เมนูด่วน' | t }}</div></div>
+      <div class="card-body">
+        <div class="action-grid">
+          <div class="action-card" (click)="navigate('/attendance')"><div class="action-card-icon" style="background:var(--success-bg);color:var(--success)"><span class="mi mi-lg">how_to_reg</span></div><div class="action-card-label">{{ 'เช็กชื่อวันนี้' | t }}</div></div>
+          <div class="action-card" (click)="navigate('/leave')"><div class="action-card-icon" style="background:var(--warning-bg);color:var(--warning)"><span class="mi mi-lg">event_busy</span></div><div class="action-card-label">{{ 'อนุมัติการลา' | t }}</div></div>
+          <div class="action-card" (click)="navigate('/athletes')"><div class="action-card-icon" style="background:var(--primary-faint);color:var(--primary)"><span class="mi mi-lg">groups</span></div><div class="action-card-label">{{ 'โปรไฟล์นักกีฬา' | t }}</div></div>
+          <div class="action-card" (click)="navigate('/calendar')"><div class="action-card-icon" style="background:var(--accent-faint);color:var(--accent)"><span class="mi mi-lg">calendar_month</span></div><div class="action-card-label">{{ 'ปฏิทินกิจกรรม' | t }}</div></div>
+          <div class="action-card" (click)="navigate('/practice')"><div class="action-card-icon" style="background:var(--primary-faint);color:var(--primary)"><span class="mi mi-lg">link</span></div><div class="action-card-label">{{ 'ลิงก์ซ้อม' | t }}</div></div>
+          <div class="action-card" (click)="navigate('/activity')"><div class="action-card-icon" style="background:var(--accent-faint);color:var(--accent-dark)"><span class="mi mi-lg">campaign</span></div><div class="action-card-label">{{ 'กิจกรรม' | t }}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coach Bottom Grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="mi mi-sm" style="color:var(--accent)">calendar_month</span> {{ 'กิจกรรมใกล้มา' | t }}</div><button class="btn-text-sm" (click)="navigate('/calendar')">{{ 'ดูทั้งหมด' | t }}</button></div>
+        <div class="card-body" style="padding:0">
+          <div *ngIf="upcomingEvents.length===0" class="empty-state" style="padding:24px"><div class="empty-state-title">{{ 'ไม่มีกิจกรรม' | t }}</div></div>
+          <div *ngFor="let ev of upcomingEvents; trackBy: trackByEventId" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)">
+            <div [style.background]="ev.color" style="width:10px;height:10px;border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1;min-width:0"><div style="font-size:.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ ev.title }}</div><div style="font-size:.75rem;color:var(--text-muted)">{{ (ev.start_datetime | locDate) }}</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="mi mi-sm" style="color:var(--warning)">event_busy</span> {{ 'คำขอลารอดำเนินการ' | t }}</div><button class="btn-text-sm" (click)="navigate('/leave')">{{ 'จัดการ' | t }}</button></div>
+        <div class="card-body" style="padding:0">
+          <div *ngIf="pendingLeaves.length===0" class="empty-state" style="padding:24px"><div class="empty-state-title">{{ 'ไม่มีรายการค้าง' | t }}</div></div>
+          <div *ngFor="let lv of pendingLeaves; trackBy: trackByLeaveId" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ getPlayerName(lv.player_id) }}</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">{{ (lv.start_date | locDate) }} · {{ lv.reason }}</div>
+            </div>
+            <span class="badge badge-warning" style="font-size:.7rem">{{ 'รอ' | t }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="mi mi-sm" style="color:var(--accent-dark)">campaign</span> {{ 'ประกาศล่าสุด' | t }}</div><button class="btn-text-sm" (click)="navigate('/activity')">{{ 'ดูทั้งหมด' | t }}</button></div>
+        <div class="card-body" style="padding:0">
+          <div *ngFor="let act of recentActivities; trackBy: trackByActivityId" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer" (click)="navigate('/activity')">
+            <span class="mi" style="font-size:1.3rem;color:var(--accent-dark);flex-shrink:0">campaign</span>
+            <div style="flex:1;min-width:0"><div style="font-size:.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ act.title }}</div><div style="font-size:.75rem;color:var(--text-muted);margin-top:2px">{{ (act.date_from | locDate) }}</div></div>
+          </div>
+          <div *ngIf="recentActivities.length===0" class="empty-state" style="padding:24px"><div class="empty-state-title">{{ 'ยังไม่มีกิจกรรม' | t }}</div></div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- ════════════════════════════════════════════════════
+       SUPER ADMIN DASHBOARD
+  ═══════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="auth.isAdmin">
+
+    <div class="section-banner" style="margin-bottom:24px">
+      <div class="section-banner-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      </div>
+      <div>
+        <div class="section-banner-title">{{ 'ระบบจัดการนักกีฬาบริดจ์เยาวชนทีมชาติ' | t }}</div>
+        <div class="section-banner-sub">{{ 'สวัสดี,' | t }} {{ auth.currentUser?.th_prefix }}{{ auth.currentUser?.th_first_name }}! · {{ (today | locDate) }}</div>
+      </div>
+    </div>
+
+    <!-- Admin Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px">
+      <div class="stat-card" style="--stat-color:#2d7dd2;--stat-bg:#e3f1fc;cursor:pointer" (click)="navigate('/athletes')">
+        <div class="stat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+        <div class="stat-content"><div class="stat-value">{{ stats.players }}</div><div class="stat-label">{{ 'นักกีฬาทั้งหมด' | t }}</div></div>
+      </div>
+      <div class="stat-card" style="--stat-color:#2e7d32;--stat-bg:#e8f5e9;cursor:pointer" (click)="navigate('/attendance')">
+        <div class="stat-icon" style="background:#e8f5e9;color:#2e7d32"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg></div>
+        <div class="stat-content"><div class="stat-value">{{ stats.presentToday }}</div><div class="stat-label">{{ 'มาซ้อมวันนี้' | t }}</div></div>
+      </div>
+      <div class="stat-card" style="--stat-color:#e65100;--stat-bg:#fff3e0;cursor:pointer" (click)="navigate('/leave')">
+        <div class="stat-icon" style="background:#fff3e0;color:#e65100"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6z"/></svg></div>
+        <div class="stat-content"><div class="stat-value">{{ stats.pendingLeave }}</div><div class="stat-label">{{ 'คำขอลารอดำเนินการ' | t }}</div></div>
+      </div>
+      <div class="stat-card" style="--stat-color:#0288d1;--stat-bg:#e1f5fe;cursor:pointer" (click)="navigate('/calendar')">
+        <div class="stat-icon" style="background:#e1f5fe;color:#0288d1"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg></div>
+        <div class="stat-content"><div class="stat-value">{{ stats.upcomingEvents }}</div><div class="stat-label">{{ 'กิจกรรมที่จะมาถึง' | t }}</div></div>
+      </div>
+    </div>
+
+    <!-- Quick Actions (Admin) -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-header"><div class="card-title"><span class="mi mi-sm" style="color:var(--accent)">bolt</span> {{ 'การดำเนินการด่วน' | t }}</div></div>
+      <div class="card-body">
+        <div class="action-grid">
+          <div class="action-card" (click)="navigate('/attendance')"><div class="action-card-icon" style="background:var(--success-bg);color:var(--success)"><span class="mi mi-lg">how_to_reg</span></div><div class="action-card-label">{{ 'เช็กชื่อวันนี้' | t }}</div></div>
+          <div class="action-card" (click)="navigate('/leave')"><div class="action-card-icon" style="background:var(--warning-bg);color:var(--warning)"><span class="mi mi-lg">event_busy</span></div><div class="action-card-label">{{ 'อนุมัติการลา' | t }}</div></div>
+          <div class="action-card" (click)="navigate('/calendar')"><div class="action-card-icon" style="background:var(--accent-faint);color:var(--accent)"><span class="mi mi-lg">calendar_month</span></div><div class="action-card-label">{{ 'ปฏิทินกิจกรรม' | t }}</div></div>
+          <div class="action-card" (click)="navigate('/practice')"><div class="action-card-icon" style="background:var(--primary-faint);color:var(--primary)"><span class="mi mi-lg">link</span></div><div class="action-card-label">{{ 'ลิงก์ซ้อม' | t }}</div></div>
+          <div class="action-card" (click)="navigate('/activity')"><div class="action-card-icon" style="background:var(--accent-faint);color:var(--accent-dark)"><span class="mi mi-lg">campaign</span></div><div class="action-card-label">{{ 'กิจกรรม' | t }}</div></div>
+          <div class="action-card" (click)="navigate('/athletes')"><div class="action-card-icon" style="background:var(--primary-faint);color:var(--primary)"><span class="mi mi-lg">manage_accounts</span></div><div class="action-card-label">{{ 'จัดการนักกีฬา' | t }}</div></div>
+          <div class="action-card" (click)="navigate('/teams')"><div class="action-card-icon" style="background:var(--accent-faint);color:var(--accent-dark)"><span class="mi mi-lg">shield_person</span></div><div class="action-card-label">{{ 'จัดการทีม' | t }}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Bottom Grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="mi mi-sm" style="color:var(--accent)">calendar_month</span> {{ 'กิจกรรมใกล้มา' | t }}</div><button class="btn-text-sm" (click)="navigate('/calendar')">{{ 'ดูทั้งหมด' | t }}</button></div>
+        <div class="card-body" style="padding:0">
+          <div *ngIf="upcomingEvents.length===0" class="empty-state" style="padding:24px"><div class="empty-state-title">{{ 'ไม่มีกิจกรรม' | t }}</div></div>
+          <div *ngFor="let ev of upcomingEvents; trackBy: trackByEventId" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)">
+            <div [style.background]="ev.color" style="width:10px;height:10px;border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ ev.title }}</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">{{ (ev.start_datetime | locDate) }}</div>
+            </div>
+            <span class="badge" [class.badge-accent]="!ev.team_id" [class.badge-gold]="ev.team_id" style="font-size:.7rem">{{ ev.team_id ? (ev.team_id | teamName) : ('ทุกทีม' | t) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="mi mi-sm" style="color:var(--warning)">event_busy</span> {{ 'คำขอลารอดำเนินการ' | t }}</div><button class="btn-text-sm" (click)="navigate('/leave')">{{ 'จัดการ' | t }}</button></div>
+        <div class="card-body" style="padding:0">
+          <div *ngIf="pendingLeaves.length===0" class="empty-state" style="padding:24px"><div class="empty-state-title">{{ 'ไม่มีรายการค้าง' | t }}</div></div>
+          <div *ngFor="let lv of pendingLeaves; trackBy: trackByLeaveId" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ getPlayerName(lv.player_id) }}</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">{{ (lv.start_date | locDate) }} · {{ lv.reason }}</div>
+            </div>
+            <span class="badge badge-warning" style="font-size:.7rem">{{ 'รอ' | t }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="mi mi-sm" style="color:var(--accent-dark)">campaign</span> {{ 'ประกาศล่าสุด' | t }}</div><button class="btn-text-sm" (click)="navigate('/activity')">{{ 'ดูทั้งหมด' | t }}</button></div>
+        <div class="card-body" style="padding:0">
+          <div *ngFor="let act of recentActivities; trackBy: trackByActivityId" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer" (click)="navigate('/activity')">
+            <span class="mi" style="font-size:1.3rem;color:var(--accent-dark);flex-shrink:0">campaign</span>
+            <div style="flex:1;min-width:0"><div style="font-size:.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ act.title }}</div><div style="font-size:.75rem;color:var(--text-muted);margin-top:2px">{{ (act.date_from | locDate) }}</div></div>
+          </div>
+          <div *ngIf="recentActivities.length===0" class="empty-state" style="padding:24px"><div class="empty-state-title">{{ 'ยังไม่มีกิจกรรม' | t }}</div></div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+</ng-container>

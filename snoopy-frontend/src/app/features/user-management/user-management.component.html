@@ -1,0 +1,281 @@
+<div class="page-header">
+  <div>
+    <h2>{{ 'จัดการผู้ใช้' | t }}</h2>
+    <p>{{ 'จัดการบัญชีผู้ใช้และสิทธิ์การเข้าถึง' | t }}</p>
+  </div>
+  <div class="page-header-actions">
+    <button *ngIf="tab==='users'" class="btn btn-primary" (click)="openCreate()">
+      <span class="mi mi-sm">person_add</span> {{ 'เพิ่มผู้ใช้' | t }}
+    </button>
+    <button *ngIf="tab==='permissions'" class="btn btn-primary" (click)="savePermissions()" [disabled]="permSaving">
+      <span class="mi mi-sm">save</span> {{ (permSaving ? 'กำลังบันทึก...' : 'บันทึก Permission') | t }}
+    </button>
+  </div>
+</div>
+
+<!-- Stat cards -->
+<div class="um-stat-row">
+  <div class="um-stat um-stat-all">
+    <div class="um-stat-icon"><span class="mi">groups</span></div>
+    <div class="um-stat-info"><span class="um-stat-num">{{ countAll }}</span><span class="um-stat-label">{{ 'ผู้ใช้ทั้งหมด' | t }}</span></div>
+  </div>
+  <div class="um-stat um-stat-admin">
+    <div class="um-stat-icon"><span class="mi">shield_person</span></div>
+    <div class="um-stat-info"><span class="um-stat-num">{{ countAdmin }}</span><span class="um-stat-label">Super Admin</span></div>
+  </div>
+  <div class="um-stat um-stat-coach">
+    <div class="um-stat-icon"><span class="mi">sports</span></div>
+    <div class="um-stat-info"><span class="um-stat-num">{{ countCoach }}</span><span class="um-stat-label">Coach</span></div>
+  </div>
+  <div class="um-stat um-stat-player">
+    <div class="um-stat-icon"><span class="mi">directions_run</span></div>
+    <div class="um-stat-info"><span class="um-stat-num">{{ countPlayer }}</span><span class="um-stat-label">Player</span></div>
+  </div>
+</div>
+
+<!-- Tab Bar -->
+<div class="tab-bar" style="margin-bottom:20px">
+  <button class="tab-btn" [class.active]="tab==='users'"       (click)="tab='users'">
+    <span class="mi mi-sm">manage_accounts</span> {{ 'จัดการผู้ใช้' | t }}
+  </button>
+  <button class="tab-btn" [class.active]="tab==='permissions'" (click)="tab='permissions'">
+    <span class="mi mi-sm">lock_person</span> {{ 'สิทธิ์การเข้าถึง' | t }}
+  </button>
+</div>
+
+<!-- ═══ TAB: USERS ═══════════════════════════════════════════ -->
+<ng-container *ngIf="tab==='users'">
+
+  <!-- Filter bar -->
+  <div class="filter-bar" style="margin-bottom:16px">
+    <div class="search-wrap" style="flex:1">
+      <span class="search-icon mi mi-sm">search</span>
+      <input class="form-control search-input" [placeholder]="'ค้นหาชื่อ อีเมล...' | t" [(ngModel)]="search" (input)="applyFilter()" />
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-sm" [class.btn-primary]="roleFilter===''" [class.btn-ghost]="roleFilter!==''" (click)="roleFilter='';applyFilter()">{{ 'ทุก Role' | t }}</button>
+      <button class="btn btn-sm" [class.btn-primary]="roleFilter==='Super Admin'" [class.btn-ghost]="roleFilter!=='Super Admin'" (click)="roleFilter='Super Admin';applyFilter()">Super Admin</button>
+      <button class="btn btn-sm" [class.btn-primary]="roleFilter==='Coach'" [class.btn-ghost]="roleFilter!=='Coach'" (click)="roleFilter='Coach';applyFilter()">Coach</button>
+      <button class="btn btn-sm" [class.btn-primary]="roleFilter==='Player'" [class.btn-ghost]="roleFilter!=='Player'" (click)="roleFilter='Player';applyFilter()">Player</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" style="text-align:center;padding:60px;color:var(--text-muted)">{{ 'กำลังโหลด...' | t }}</div>
+
+  <div *ngIf="!loading" class="um-user-list">
+    <!-- Header -->
+    <div class="um-user-header">
+      <div></div><!-- avatar placeholder -->
+      <div>{{ 'ชื่อ / อีเมล' | t }}</div>
+      <div>Role</div>
+      <div>{{ 'ทีม' | t }}</div>
+      <div>{{ 'สถานะ' | t }}</div>
+      <div>{{ 'เข้าสู่ระบบล่าสุด' | t }}</div>
+      <div></div><!-- actions -->
+    </div>
+
+    <div *ngIf="filtered.length===0" class="empty-state" style="border-top:1px solid var(--border)"><div class="empty-state-title">{{ 'ไม่พบผู้ใช้' | t }}</div></div>
+
+    <div *ngFor="let u of filtered; trackBy: trackByUserId" class="um-user-row" (click)="openDetail(u)">
+      <!-- Avatar -->
+      <img [src]="u | avatar" class="um-user-avatar" />
+
+      <!-- Name block -->
+      <div class="um-user-name">
+        <span class="um-user-thname">{{ u.th_prefix }}{{ u.th_first_name }} {{ u.th_last_name }}</span>
+        <span class="um-user-email">{{ u.email }}</span>
+      </div>
+
+      <!-- Role -->
+      <span class="badge um-user-role" [ngClass]="u.role | roleBadge">{{ u.role }}</span>
+
+      <!-- Team -->
+      <span class="um-user-team">{{ (u.team_id | teamName) }}</span>
+
+      <!-- Status -->
+      <span class="badge" [class.badge-success]="u.is_active" [class.badge-gray]="!u.is_active">
+        {{ (u.is_active ? 'ใช้งานอยู่' : 'ระงับ') | t }}
+      </span>
+
+      <!-- Last login -->
+      <span class="um-user-login">{{ u.last_login ? (u.last_login | slice:0:10) : '—' }}</span>
+
+      <!-- Actions -->
+      <div class="um-user-actions" (click)="$event.stopPropagation()">
+        <button class="btn btn-ghost btn-sm" (click)="openEdit(u)" title="{{ 'แก้ไข' | t }}"><span class="mi mi-sm">edit</span></button>
+        <button *ngIf="u.is_active && u.user_id !== auth.currentUser?.user_id" class="btn btn-ghost btn-sm" style="color:var(--danger)" (click)="deactivate(u)" title="{{ 'ระงับบัญชี' | t }}"><span class="mi mi-sm">block</span></button>
+        <button *ngIf="!u.is_active" class="btn btn-ghost btn-sm" style="color:var(--success)" (click)="reactivate(u)" title="{{ 'เปิดใช้งาน' | t }}"><span class="mi mi-sm">check_circle</span></button>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ═══ TAB: PERMISSIONS ══════════════════════════════════════ -->
+<ng-container *ngIf="tab==='permissions'">
+  <div *ngIf="permLoading" style="text-align:center;padding:60px;color:var(--text-muted)">{{ 'กำลังโหลด...' | t }}</div>
+
+  <div *ngIf="!permLoading" class="perm-table-wrap">
+    <table class="perm-table">
+      <thead>
+        <tr>
+          <th class="perm-resource-col" rowspan="2">{{ 'หน้า / ฟีเจอร์' | t }}</th>
+          <th colspan="4" class="perm-coach-start" style="color:#1b3a8f">
+            <span class="mi mi-sm" style="vertical-align:-3px">sports</span> Coach
+          </th>
+          <th colspan="4" class="perm-player-start" style="color:#15803d">
+            <span class="mi mi-sm" style="vertical-align:-3px">directions_run</span> Player
+          </th>
+          <th colspan="4" class="perm-admin-start" style="color:#c0292e">
+            <span class="mi mi-sm" style="vertical-align:-3px">shield_person</span> Super Admin
+          </th>
+        </tr>
+        <tr>
+          <th class="perm-check perm-coach-start">{{ 'ดู' | t }}</th>
+          <th class="perm-check">{{ 'สร้าง' | t }}</th>
+          <th class="perm-check">{{ 'แก้ไข' | t }}</th>
+          <th class="perm-check">{{ 'ลบ' | t }}</th>
+          <th class="perm-check perm-player-start">{{ 'ดู' | t }}</th>
+          <th class="perm-check">{{ 'สร้าง' | t }}</th>
+          <th class="perm-check">{{ 'แก้ไข' | t }}</th>
+          <th class="perm-check">{{ 'ลบ' | t }}</th>
+          <th class="perm-check perm-admin-start">{{ 'ดู' | t }}</th>
+          <th class="perm-check">{{ 'สร้าง' | t }}</th>
+          <th class="perm-check">{{ 'แก้ไข' | t }}</th>
+          <th class="perm-check">{{ 'ลบ' | t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of permRows; trackBy: trackByResource">
+          <td class="perm-resource-col">
+            <span class="perm-resource-label">
+              <span class="mi mi-sm perm-resource-icon">{{ resourceIcon(row.resource) }}</span>
+              {{ row.label | t }}
+            </span>
+          </td>
+          <td class="perm-check perm-coach-start"><input type="checkbox" class="perm-checkbox" [(ngModel)]="row.coach_view" /></td>
+          <td class="perm-check"><input type="checkbox" class="perm-checkbox" [(ngModel)]="row.coach_create" /></td>
+          <td class="perm-check"><input type="checkbox" class="perm-checkbox" [(ngModel)]="row.coach_edit" /></td>
+          <td class="perm-check"><input type="checkbox" class="perm-checkbox" [(ngModel)]="row.coach_delete" /></td>
+          <td class="perm-check perm-player-start"><input type="checkbox" class="perm-checkbox" [(ngModel)]="row.player_view" /></td>
+          <td class="perm-check"><input type="checkbox" class="perm-checkbox" [(ngModel)]="row.player_create" /></td>
+          <td class="perm-check"><input type="checkbox" class="perm-checkbox" [(ngModel)]="row.player_edit" /></td>
+          <td class="perm-check"><input type="checkbox" class="perm-checkbox" [(ngModel)]="row.player_delete" /></td>
+          <td class="perm-check perm-admin-cell perm-admin-start"><span class="mi">check</span></td>
+          <td class="perm-check perm-admin-cell"><span class="mi">check</span></td>
+          <td class="perm-check perm-admin-cell"><span class="mi">check</span></td>
+          <td class="perm-check perm-admin-cell"><span class="mi">check</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top:10px;font-size:.78rem;color:var(--text-muted)">
+      <span class="mi mi-sm" style="vertical-align:-3px">info</span>
+      {{ 'Super Admin มีสิทธิ์ทุกอย่างเสมอ ไม่สามารถปรับได้' | t }}
+    </p>
+  </div>
+</ng-container>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" *ngIf="showDetailModal" (click)="showDetailModal=false">
+  <div class="modal-container" (click)="$event.stopPropagation()" *ngIf="selectedUser">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ 'ข้อมูลผู้ใช้' | t }}</h3>
+      <button class="modal-close" (click)="showDetailModal=false"><span class="mi mi-sm">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:20px">
+        <img [src]="selectedUser | avatar" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--primary)" />
+        <div>
+          <h3 style="font-size:1.1rem;font-weight:800;color:var(--primary)">{{ selectedUser.th_prefix }}{{ selectedUser.th_first_name }} {{ selectedUser.th_last_name }}</h3>
+          <div style="color:var(--text-secondary);font-size:.85rem">{{ selectedUser.en_first_name }} {{ selectedUser.en_last_name }}</div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+            <span class="badge" [ngClass]="selectedUser.role | roleBadge">{{ selectedUser.role }}</span>
+            <span class="badge" [class.badge-success]="selectedUser.is_active" [class.badge-gray]="!selectedUser.is_active">{{ (selectedUser.is_active ? 'ใช้งานอยู่' : 'ระงับ') | t }}</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.88rem">
+        <div><span style="color:var(--text-muted)">{{ 'อีเมล' | t }}:</span><br/><strong>{{ selectedUser.email }}</strong></div>
+        <div><span style="color:var(--text-muted)">{{ 'เบอร์โทร' | t }}:</span><br/><strong>{{ selectedUser.phone || '—' }}</strong></div>
+        <div><span style="color:var(--text-muted)">{{ 'ทีม' | t }}:</span><br/><strong>{{ (selectedUser.team_id | teamName) }}</strong></div>
+        <div><span style="color:var(--text-muted)">{{ 'วันเกิด' | t }}:</span><br/><strong>{{ selectedUser.birth_date || '—' }}</strong></div>
+        <div><span style="color:var(--text-muted)">{{ 'เข้าสู่ระบบล่าสุด' | t }}:</span><br/><strong>{{ selectedUser.last_login ? (selectedUser.last_login | slice:0:10) : '—' }}</strong></div>
+        <div><span style="color:var(--text-muted)">{{ 'สร้างเมื่อ' | t }}:</span><br/><strong>{{ selectedUser.created_at | slice:0:10 }}</strong></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-sm" (click)="openEdit(selectedUser);showDetailModal=false"><span class="mi mi-sm">edit</span> {{ 'แก้ไข' | t }}</button>
+      <button *ngIf="selectedUser.is_active && selectedUser.user_id !== auth.currentUser?.user_id" class="btn btn-ghost btn-sm" (click)="deactivate(selectedUser)">{{ 'ระงับบัญชี' | t }}</button>
+      <button *ngIf="!selectedUser.is_active" class="btn btn-primary btn-sm" (click)="reactivate(selectedUser)">{{ 'เปิดใช้งาน' | t }}</button>
+      <button class="btn btn-ghost btn-sm" (click)="showDetailModal=false">{{ 'ปิด' | t }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ (editingUser ? 'แก้ไขผู้ใช้' : 'เพิ่มผู้ใช้ใหม่') | t }}</h3>
+      <button class="modal-close" (click)="showModal=false"><span class="mi mi-sm">close</span></button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">{{ 'คำนำหน้า' | t }}</label>
+            <app-select formControlName="th_prefix" [allowEmpty]="false"
+              [options]="[{value:'นาย',label:'นาย'},{value:'นาง',label:'นาง'},{value:'นางสาว',label:'นางสาว'},{value:'เด็กชาย',label:'เด็กชาย'},{value:'เด็กหญิง',label:'เด็กหญิง'}]" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role <span class="required">*</span></label>
+            <app-select formControlName="role" [allowEmpty]="false" [options]="ROLE_OPTIONS" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">{{ 'ชื่อ (ไทย)' | t }} <span class="required">*</span></label>
+            <input class="form-control" formControlName="th_first_name" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">{{ 'นามสกุล (ไทย)' | t }} <span class="required">*</span></label>
+            <input class="form-control" formControlName="th_last_name" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name (EN)</label>
+            <input class="form-control" formControlName="en_first_name" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name (EN)</label>
+            <input class="form-control" formControlName="en_last_name" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email <span class="required">*</span></label>
+            <input class="form-control" type="email" formControlName="email" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">{{ 'เบอร์โทรศัพท์' | t }}</label>
+            <input class="form-control" formControlName="phone" placeholder="0812345678" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">{{ 'ทีม' | t }}</label>
+            <app-select formControlName="team_id" [options]="teamSelectOptions" />
+          </div>
+          <div class="form-group" *ngIf="form.get('team_id')?.value && getSubTeamsOf(form.get('team_id')?.value).length > 0">
+            <label class="form-label">{{ 'ทีมย่อย' | t }}</label>
+            <app-select formControlName="sub_team_id" [options]="subTeamSelectOptions" />
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving||form.invalid">{{ (saving ? 'กำลังบันทึก...' : 'บันทึก') | t }}</button>
+      <button class="btn btn-ghost" (click)="showModal=false">{{ 'ยกเลิก' | t }}</button>
+    </div>
+  </div>
+</div>

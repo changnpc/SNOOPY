@@ -1,0 +1,192 @@
+<div class="page-header">
+  <div><h2>{{ 'ปฏิทินกิจกรรม' | t }}</h2><p>{{ 'ตารางการซ้อมและกิจกรรม' | t }}</p></div>
+  <div class="page-header-actions">
+    <button *ngIf="auth.isAdmin||auth.isCoach" class="btn btn-primary" (click)="openCreate()"><span class="mi mi-sm">add</span> {{ 'เพิ่มกิจกรรม' | t }}</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="cal-header">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-ghost btn-sm" (click)="prev()"><span class="mi mi-sm">chevron_left</span></button>
+        <span class="cal-month-label">{{ months[month] }} {{ yearLabel }}</span>
+        <button class="btn btn-ghost btn-sm" (click)="next()"><span class="mi mi-sm">chevron_right</span></button>
+        <button class="btn btn-ghost btn-sm" (click)="today()">{{ 'วันนี้' | t }}</button>
+      </div>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-day-header" *ngFor="let d of dayHeaders">{{ d }}</div>
+      <ng-container *ngFor="let week of weeks">
+        <div *ngFor="let day of week"
+             class="cal-cell"
+             [class.other-month]="day.isOtherMonth"
+             [class.today]="day.isToday"
+             (click)="clickDay(day)">
+          <div class="cal-date">{{ day.date?.getDate() }}</div>
+          <div *ngFor="let ev of day.events.slice(0,2)" class="cal-event" [style.background]="ev.color" (click)="clickEvent(ev, $event)">{{ ev.title }}</div>
+          <div *ngIf="day.events.length > 2" class="cal-event-more" (click)="showMore(day, $event)">+{{ day.events.length-2 }} เพิ่มเติม</div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<!-- Day Events Panel -->
+<div *ngIf="selectedDay && selectedDay.events.length" class="card" style="margin-top:16px">
+  <div class="card-header">
+    <div class="card-title">{{ 'กิจกรรมวันที่' | t }} {{ formatLong(selectedDay.date) }}</div>
+    <button class="btn-icon" (click)="selectedDay=null"><span class="mi mi-sm">close</span></button>
+  </div>
+  <div class="card-body" style="padding:0">
+    <div *ngFor="let ev of selectedDay.events" style="display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)">
+      <div [style.background]="ev.color" style="width:4px;border-radius:2px;flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="font-weight:700">{{ ev.title }}</div>
+        <div style="font-size:.82rem;color:var(--text-muted);margin-top:2px">{{ isAllDay(ev) ? ('ทั้งวัน' | t) : formatDt(ev.start_datetime)+' – '+formatDt(ev.end_datetime) }}</div>
+        <div *ngIf="ev.description" style="font-size:.85rem;color:var(--text-secondary);margin-top:4px">{{ ev.description }}</div>
+        <div style="margin-top:6px"><span class="badge" [class.badge-accent]="!ev.team_id" [class.badge-gold]="ev.team_id">{{ ev.team_id ? (ev.team_id | teamName) : ('ทุกทีม' | t) }}</span></div>
+        <div *ngIf="auth.isAdmin||(auth.isCoach && ev.created_by===auth.currentUser?.user_id)" style="margin-top:8px;display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" (click)="openEdit(ev)"><span class="mi mi-sm">edit</span> {{ 'แก้ไข' | t }}</button>
+          <button class="btn btn-danger btn-sm" (click)="delete(ev)"><span class="mi mi-sm">delete</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Day All-Events Modal -->
+<div class="modal-overlay" *ngIf="showMoreDay" (click)="showMoreDay=null">
+  <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ 'กิจกรรมวันที่' | t }} {{ formatLong(showMoreDay.date) }}</h3>
+      <button class="modal-close" (click)="showMoreDay=null"><span class="mi mi-sm">close</span></button>
+    </div>
+    <div class="modal-body" style="gap:8px;padding:16px">
+      <div *ngFor="let ev of showMoreDay.events"
+           class="day-event-row"
+           (click)="clickEvent(ev, $event); showMoreDay=null">
+        <span class="cal-popover-dot" [style.background]="ev.color"></span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ ev.title }}</div>
+          <div style="font-size:.78rem;color:var(--text-muted)">{{ isAllDay(ev) ? ('ทั้งวัน' | t) : formatDt(ev.start_datetime) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Event Popover (Google Calendar style) -->
+<div *ngIf="popoverEvent" class="cal-popover-backdrop" (click)="closePopover()"></div>
+<div *ngIf="popoverEvent" class="cal-popover"
+     [style.left.px]="popoverX" [style.top.px]="popoverY">
+  <div class="cal-popover-header">
+    <div class="cal-popover-actions">
+      <button *ngIf="auth.isAdmin||(auth.isCoach && popoverEvent.created_by===auth.currentUser?.user_id)"
+              class="cal-popover-btn" title="แก้ไข" (click)="openEdit(popoverEvent)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      </button>
+      <button *ngIf="auth.isAdmin||(auth.isCoach && popoverEvent.created_by===auth.currentUser?.user_id)"
+              class="cal-popover-btn cal-popover-btn-danger" title="ลบ" (click)="delete(popoverEvent); closePopover()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      </button>
+      <button class="cal-popover-btn" title="ปิด" (click)="closePopover()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="cal-popover-body">
+    <div class="cal-popover-title-row">
+      <span class="cal-popover-dot" [style.background]="popoverEvent.color"></span>
+      <span class="cal-popover-title">{{ popoverEvent.title }}</span>
+    </div>
+    <div class="cal-popover-row">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="cal-popover-icon"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+      <span>{{ isAllDay(popoverEvent) ? ('ทั้งวัน · ' | t) : '' }}{{ formatDt(popoverEvent.start_datetime) }}{{ !isAllDay(popoverEvent) ? ' – ' + formatDt(popoverEvent.end_datetime) : '' }}</span>
+    </div>
+    <div *ngIf="popoverEvent.description" class="cal-popover-row">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="cal-popover-icon"><path d="M3 5h2V3c-1.1 0-2 .9-2 2zm0 8h2v-2H3v2zm4 8h2v-2H7v2zM3 9h2V7H3v2zm10-6h-2v2h2V3zm6 0v2h2c0-1.1-.9-2-2-2zM5 21v-2H3c0 1.1.9 2 2 2zm-2-4h2v-2H3v2zM9 3H7v2h2V3zm2 18h2v-2h-2v2zm8-8h2v-2h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zm0-12h2V7h-2v2zm0 8h2v-2h-2v2zm-4 4h2v-2h-2v2zm0-16h2V3h-2v2z"/></svg>
+      <span>{{ popoverEvent.description }}</span>
+    </div>
+    <div class="cal-popover-row">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="cal-popover-icon"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      <span>{{ popoverEvent.team_id ? (popoverEvent.team_id | teamName) : ('ทุกทีม' | t) }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h3 class="modal-title">{{ (editingEvent ? 'แก้ไขกิจกรรม' : 'เพิ่มกิจกรรม') | t }}</h3><button class="modal-close" (click)="showModal=false"><span class="mi mi-sm">close</span></button></div>
+    <div class="modal-body">
+      <form [formGroup]="form">
+
+        <!-- ชื่อ -->
+        <div class="form-group">
+          <label class="form-label">{{ 'ชื่อกิจกรรม' | t }} <span class="required">*</span></label>
+          <input class="form-control" formControlName="title" [placeholder]="'ชื่อกิจกรรม...' | t" />
+        </div>
+
+        <!-- All-day toggle -->
+        <div class="toggle-row" style="margin-top:8px">
+          <div class="toggle-info">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text-muted)">
+              <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5C3.9 4 3 4.9 3 6v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V9h14v11z"/>
+            </svg>
+            <span>{{ 'กิจกรรมทั้งวัน' | t }}</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" formControlName="is_all_day" (change)="onAllDayChange()" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+
+        <!-- วันเริ่ม -->
+        <div class="form-group">
+          <label class="form-label">{{ 'วันเริ่มต้น' | t }} <span class="required">*</span></label>
+          <div style="display:flex;gap:8px">
+            <app-date-picker formControlName="start_date" style="flex:1.6"></app-date-picker>
+            <app-time-picker formControlName="start_time" style="flex:1"></app-time-picker>
+          </div>
+        </div>
+
+        <!-- วันสิ้นสุด -->
+        <div class="form-group">
+          <label class="form-label">{{ 'วันสิ้นสุด' | t }} <span class="required">*</span></label>
+          <div style="display:flex;gap:8px">
+            <app-date-picker formControlName="end_date" style="flex:1.6"></app-date-picker>
+            <app-time-picker formControlName="end_time" style="flex:1"></app-time-picker>
+          </div>
+          <div *ngIf="endBeforeStartError" class="form-error" style="margin-top:6px;display:flex;align-items:center;gap:6px;color:var(--danger);font-size:.82rem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            {{ 'วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่มต้น' | t }}
+          </div>
+        </div>
+
+        <!-- สี event -->
+        <div class="form-group">
+          <label class="form-label">{{ 'สี' | t }}</label>
+          <app-color-palette formControlName="color"></app-color-palette>
+        </div>
+
+        <!-- ทีม -->
+        <div class="form-group">
+          <label class="form-label">{{ 'ทีม' | t }}</label>
+          <app-select formControlName="team_id" [options]="teamOptions" [placeholder]="'ทุกทีม' | t" [allowEmpty]="false" />
+        </div>
+
+        <!-- รายละเอียด -->
+        <div class="form-group">
+          <label class="form-label">{{ 'รายละเอียด' | t }}</label>
+          <textarea class="form-control" formControlName="description" rows="2" [placeholder]="'รายละเอียดเพิ่มเติม...' | t"></textarea>
+        </div>
+
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving||form.invalid">{{ (saving ? 'กำลังบันทึก...' : 'บันทึก') | t }}</button>
+      <button class="btn btn-ghost" (click)="showModal=false">{{ 'ยกเลิก' | t }}</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,128 @@
+<div class="page-header">
+  <div>
+    <h2>{{ 'ลิงก์ซ้อมไพ่บริดจ์' | t }}</h2>
+    <p>{{ 'ลิงก์เข้าร่วมการซ้อมออนไลน์' | t }}</p>
+  </div>
+  <div class="page-header-actions">
+    <button *ngIf="auth.isAdmin || auth.role === 'Coach'" class="btn btn-primary" (click)="openCreate()">
+      <span class="mi mi-sm">add</span>
+      {{ 'เพิ่มลิงก์ซ้อม' | t }}
+    </button>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tab-bar" style="margin-bottom:20px">
+  <button class="tab-btn" [class.active]="tab==='current'" (click)="tab='current'">{{ 'ลิงก์ปัจจุบัน' | t }}</button>
+  <button class="tab-btn" [class.active]="tab==='history'" (click)="tab='history'">{{ 'ประวัติย้อนหลัง' | t }}</button>
+</div>
+
+<div *ngIf="loading && tab==='current'" style="text-align:center;padding:60px;color:var(--text-muted)">{{ 'กำลังโหลด...' | t }}</div>
+
+<div *ngIf="!(loading && tab==='current')">
+  <div *ngIf="activeGroups.length === 0" class="empty-state" style="padding:60px 24px">
+    <div class="empty-state-icon">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+    </div>
+    <div class="empty-state-title">{{ 'ไม่มีลิงก์ซ้อม' | t }}</div>
+    <div class="empty-state-sub" *ngIf="auth.isAdmin || auth.role==='Coach'">{{ 'กดปุ่ม "เพิ่มลิงก์ซ้อม" เพื่อเริ่มต้น' | t }}</div>
+  </div>
+
+  <div *ngFor="let g of activeGroups; trackBy: trackByGroupDate" style="margin-bottom:24px">
+    <!-- Date header -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div style="width:4px;height:24px;background:var(--primary);border-radius:2px"></div>
+      <h3 style="font-size:1rem;font-weight:700;color:var(--primary);margin:0">{{ (g.date | locDate:'full') }}</h3>
+    </div>
+
+    <!-- Link cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">
+      <div *ngFor="let l of g.links; trackBy: trackByLinkId" class="card" style="padding:0;overflow:hidden">
+        <!-- Card header strip -->
+        <div style="background:linear-gradient(135deg,var(--primary),var(--primary-light));padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+          <div style="color:white;font-weight:700;font-size:.95rem">
+            <span style="opacity:.75;font-size:.78rem;font-weight:500">Session {{ l.section }}</span><br/>
+            {{ (l.team_id | teamName) }}
+          </div>
+          <div *ngIf="auth.isAdmin || auth.role==='Coach'" style="display:flex;gap:6px">
+            <button class="btn btn-sm" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.45)" (click)="openEdit(l)"><span class="mi mi-sm">edit</span></button>
+            <button class="btn btn-sm" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.45)" (click)="delete(l)" [disabled]="deletingId===l.link_id"><span class="mi mi-sm">delete</span></button>
+          </div>
+        </div>
+
+        <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+          <!-- Player link (always visible) -->
+          <div>
+            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px;font-weight:600"><span class="mi mi-sm" style="vertical-align:-3px">link</span> {{ 'ลิงก์สำหรับนักกีฬา' | t }}</div>
+            <a [href]="l.player_link | rbLink" target="_blank" rel="noopener"
+               class="btn btn-primary btn-sm"
+               style="width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+              {{ 'เข้าร่วมห้องซ้อม' | t }}
+            </a>
+          </div>
+
+          <!-- Coach link (for coaches/admins only) -->
+          <div *ngIf="(auth.isAdmin || auth.role==='Coach') && l.coach_link">
+            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px;font-weight:600"><span class="mi mi-sm" style="vertical-align:-3px">sports</span> {{ 'ลิงก์สำหรับโค้ช' | t }}</div>
+            <a [href]="l.coach_link | rbLink" target="_blank" rel="noopener"
+               class="btn btn-ghost btn-sm"
+               style="width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+              {{ 'เข้าร่วม (โค้ช)' | t }}
+            </a>
+          </div>
+
+          <!-- Note -->
+          <div *ngIf="l.note" style="font-size:.82rem;color:var(--text-secondary);background:var(--bg-muted);border-radius:6px;padding:8px 10px">
+            <span class="mi mi-sm" style="vertical-align:-3px">sticky_note_2</span> {{ l.note }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create / Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ (editing ? 'แก้ไขลิงก์ซ้อม' : 'เพิ่มลิงก์ซ้อม') | t }}</h3>
+      <button class="modal-close" (click)="showModal=false"><span class="mi mi-sm">close</span></button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">{{ 'วันซ้อม' | t }} <span class="required">*</span></label>
+            <app-date-picker formControlName="practice_date" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">ชื่อ Session <span class="required">*</span></label>
+            <input class="form-control" type="text" formControlName="section" [placeholder]="'เช่น A, B, Session A...' | t" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ 'ทีม' | t }}</label>
+          <app-select formControlName="team_id" [options]="teamOptions" [placeholder]="'ทุกทีม (Joint)' | t" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ 'ลิงก์สำหรับนักกีฬา' | t }} <span class="required">*</span></label>
+          <input class="form-control" formControlName="player_link" placeholder="https://..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ 'ลิงก์สำหรับโค้ช' | t }}</label>
+          <input class="form-control" formControlName="coach_link" placeholder="https://..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ 'หมายเหตุ' | t }}</label>
+          <input class="form-control" formControlName="note" [placeholder]="'หมายเหตุเพิ่มเติม...' | t" />
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving || form.invalid">{{ (saving ? 'กำลังบันทึก...' : 'บันทึก') | t }}</button>
+      <button class="btn btn-ghost" (click)="showModal=false">{{ 'ยกเลิก' | t }}</button>
+    </div>
+  </div>
+</div>

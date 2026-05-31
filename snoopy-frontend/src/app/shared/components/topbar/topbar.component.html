@@ -1,0 +1,49 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="btn-icon topbar-hamburger" (click)="toggleSidebar.emit()" aria-label="menu">
+      <span class="mi">menu</span>
+    </button>
+    <span class="topbar-breadcrumb">{{ pageTitle | t }}</span>
+  </div>
+
+  <div class="topbar-right">
+    <button class="btn-icon" (click)="toggleLang()" [title]="'ภาษา' | t">
+      <span style="font-size:.8rem;font-weight:800;letter-spacing:.5px">{{ (langSvc.lang$ | async) === 'en' ? 'EN' : 'TH' }}</span>
+    </button>
+    <button class="btn-icon" (click)="toggleTheme()"
+            [title]="((theme.theme$ | async) === 'dark' ? 'โหมดสว่าง' : 'โหมดมืด') | t">
+      <span class="mi">{{ (theme.theme$ | async) === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+    </button>
+
+    <div class="notif-wrap" (clickOutside)="showNotifPanel=false">
+      <button class="btn-icon notif-btn" (click)="togglePanel()">
+        <span class="mi">notifications</span>
+        <span *ngIf="unreadCount > 0" class="notif-count">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+      </button>
+
+      <div class="notif-panel" *ngIf="showNotifPanel">
+        <div class="notif-panel-header">
+          <span class="notif-panel-title">{{ 'การแจ้งเตือน' | t }}</span>
+          <div style="display:flex;gap:4px">
+            <button class="btn-text-sm" (click)="markAllRead()" *ngIf="unreadCount > 0">{{ 'อ่านทั้งหมด' | t }}</button>
+            <button class="btn-text-sm" style="color:var(--danger)" (click)="clearAll()" *ngIf="notifications.length > 0">{{ 'ลบทั้งหมด' | t }}</button>
+          </div>
+        </div>
+        <div class="notif-list">
+          <div *ngIf="notifications.length === 0" class="notif-empty">{{ 'ไม่มีการแจ้งเตือน' | t }}</div>
+          <div *ngFor="let n of notifications" class="notif-item" [class.unread]="!n.is_read">
+            <div class="notif-dot" (click)="markRead(n.notification_id)"></div>
+            <div class="notif-content" (click)="markRead(n.notification_id)">
+              <div class="notif-title"><span class="mi mi-sm" style="color:var(--primary)">{{ getTypeIcon(n.type) }}</span> {{ n.title }}</div>
+              <div class="notif-msg">{{ n.message }}</div>
+              <div class="notif-time">{{ timeAgo(n.created_at) }}</div>
+            </div>
+            <button class="notif-delete-btn btn-icon" (click)="deleteOne(n.notification_id)" title="ลบ">
+              <span class="mi mi-sm">close</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
