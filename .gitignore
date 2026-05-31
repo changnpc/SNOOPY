@@ -1,0 +1,57 @@
+# ═══════════════════════════════════════════════════════════════
+#  SNOOPY — Root .gitignore
+# ═══════════════════════════════════════════════════════════════
+
+# ── Secrets (NEVER commit these) ─────────────────────────────
+.env
+.env.local
+.env.*.local
+credentials/
+*.pem
+*.key
+*.p12
+
+# ── Node ─────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+
+# ── Build output ─────────────────────────────────────────────
+dist/
+snoopy-frontend/dist/
+snoopy-backend/dist/
+
+# ── Angular ──────────────────────────────────────────────────
+snoopy-frontend/.angular/
+snoopy-frontend/node_modules/
+.sass-cache/
+coverage/
+
+# ── Backend ──────────────────────────────────────────────────
+snoopy-backend/node_modules/
+
+# ── Docker ───────────────────────────────────────────────────
+docker-compose.override.yml
+
+# ── OS ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ──────────────────────────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ── Misc ─────────────────────────────────────────────────────
+*.tmp
+*.bak
+*.swp

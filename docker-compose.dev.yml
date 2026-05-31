@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  backend-dev:
+    build:
+      context: ./snoopy-backend
+      dockerfile: Dockerfile.dev
+    container_name: snoopy-backend-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - .env
+    volumes:
+      - ./snoopy-backend/src:/app/src:ro
+      - ./credentials:/app/credentials:ro
+    networks:
+      - snoopy-dev-network
+    restart: unless-stopped
+
+networks:
+  snoopy-dev-network:
+    driver: bridge
