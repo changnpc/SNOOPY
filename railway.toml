@@ -1,0 +1,11 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "snoopy-backend/Dockerfile"
+buildContext = "snoopy-backend"
+
+[deploy]
+startCommand = "node dist/main.js"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
