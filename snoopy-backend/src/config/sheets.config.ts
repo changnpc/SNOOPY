@@ -20,18 +20,32 @@ export const SHEETS = {
 let _sheetsClient: ReturnType<typeof google.sheets> | null = null;
 let _driveClient:  ReturnType<typeof google.drive>  | null = null;
 
+/**
+ * Build GoogleAuth from either:
+ *   1. GOOGLE_SERVICE_ACCOUNT_KEY_BASE64  — base64-encoded JSON (Railway / cloud)
+ *   2. GOOGLE_SERVICE_ACCOUNT_KEY_PATH    — path to JSON file (local / Docker)
+ */
 function getAuth() {
-  const keyPath = process.env['GOOGLE_SERVICE_ACCOUNT_KEY_PATH'];
-  if (!keyPath) {
-    throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY_PATH is not set in .env');
+  const scopes = [
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive.file',
+  ];
+
+  const b64 = process.env['GOOGLE_SERVICE_ACCOUNT_KEY_BASE64'];
+  if (b64) {
+    const credentials = JSON.parse(Buffer.from(b64, 'base64').toString('utf-8'));
+    return new google.auth.GoogleAuth({ credentials, scopes });
   }
-  return new google.auth.GoogleAuth({
-    keyFile: path.resolve(keyPath),
-    scopes: [
-      'https://www.googleapis.com/auth/spreadsheets',
-      'https://www.googleapis.com/auth/drive.file',
-    ],
-  });
+
+  const keyPath = process.env['GOOGLE_SERVICE_ACCOUNT_KEY_PATH'];
+  if (keyPath) {
+    return new google.auth.GoogleAuth({ keyFile: path.resolve(keyPath), scopes });
+  }
+
+  throw new Error(
+    'Google service account key not configured. ' +
+    'Set GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 (cloud) or GOOGLE_SERVICE_ACCOUNT_KEY_PATH (local).'
+  );
 }
 
 export function getSheetsClient() {

@@ -14,13 +14,23 @@ const REQUIRED = [
   'GOOGLE_CLIENT_SECRET',
   'GOOGLE_REDIRECT_URI',
   'GOOGLE_SHEETS_SPREADSHEET_ID',
-  'GOOGLE_SERVICE_ACCOUNT_KEY_PATH',
 ] as const;
 
 export function validateEnv(): void {
   const missing = REQUIRED.filter(k => !process.env[k] || process.env[k]!.trim() === '');
   if (missing.length > 0) {
     console.error(`❌ [ENV] Missing required environment variables: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+
+  // Service account key: must have at least one of the two forms.
+  const hasKeyBase64 = !!process.env['GOOGLE_SERVICE_ACCOUNT_KEY_BASE64']?.trim();
+  const hasKeyPath   = !!process.env['GOOGLE_SERVICE_ACCOUNT_KEY_PATH']?.trim();
+  if (!hasKeyBase64 && !hasKeyPath) {
+    console.error(
+      '❌ [ENV] Google service account key not set. ' +
+      'Provide GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 (Railway/cloud) or GOOGLE_SERVICE_ACCOUNT_KEY_PATH (local/Docker).'
+    );
     process.exit(1);
   }
 
