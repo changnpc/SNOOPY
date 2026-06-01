@@ -66,10 +66,21 @@ export class SheetRepository<T extends Record<string, any>> {
     return record;
   }
 
-  /** Merge a patch onto the existing row and stamp updated_at. */
+  /**
+   * Merge a patch onto the existing row and stamp updated_at.
+   *
+   * Immutable fields (the primary key, created_by, created_at) are stripped from
+   * the patch so a raw request body can never reassign a row's identity or spoof
+   * its author/creation time via mass-assignment. Services may still whitelist
+   * further (e.g. competition results forbid `status` here).
+   */
   async update(id: string, patch: Partial<T>): Promise<T> {
     const found = await this.findOrThrow(id);
-    const updated = { ...found.data, ...patch, updated_at: nowStr() } as T;
+    const safePatch = { ...patch };
+    delete (safePatch as any)[this.idField];
+    delete (safePatch as any).created_by;
+    delete (safePatch as any).created_at;
+    const updated = { ...found.data, ...safePatch, updated_at: nowStr() } as T;
     await updateRow(this.sheet, found.rowIndex, await this.toRow(updated));
     return updated;
   }
