@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
+import { requireRole } from '../middleware/rbac.middleware';
 import { findAll } from '../services/google-sheets.service';
 import { SHEETS } from '../config/sheets.config';
 import { AttendanceStatus } from '../models';
@@ -13,7 +14,8 @@ interface CompetitionResult { user_id: string; competition_id: string; }
 interface User { user_id: string; role?: string; team_id?: string; th_first_name: string; th_last_name: string; en_first_name: string; en_last_name: string; img_avatar_url?: string; is_active: string; }
 
 // ── Team summary: Super Admin = all, Coach = own team only ───────────────────
-router.get('/coach', async (req: AuthRequest, res: Response) => {
+// Players use /player for their own stats; the team-wide view is staff-only.
+router.get('/coach', requireRole('Coach', 'Super Admin'), async (req: AuthRequest, res: Response) => {
   const { role, team_id: callerTeam } = req.user!;
   const [attendance, results, users] = await Promise.all([
     findAll<AttendanceRecord>(SHEETS.ATTENDANCE),

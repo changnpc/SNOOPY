@@ -3,6 +3,13 @@ import { nowStr } from '../utils/date';
 import { SheetRepository, TombstoneNote } from './base/sheet-repository';
 import { Competition, CompetitionResult } from '../models';
 
+/** Keep only whitelisted keys from a patch — guards against mass-assignment. */
+function pick<T extends object, K extends keyof T>(obj: T, keys: readonly K[]): Partial<T> {
+  const out: Partial<T> = {};
+  for (const k of keys) if (obj[k] !== undefined) out[k] = obj[k];
+  return out;
+}
+
 // ── Repositories ──────────────────────────────────────────────────────────────
 
 const compRepo = new SheetRepository<Competition>(
@@ -41,8 +48,12 @@ export async function createCompetition(data: Partial<Competition>, createdBy: s
   return compRepo.insert(record);
 }
 
+// Fields a Coach/Admin may edit on a competition. Protects id/created_by/timestamps
+// from mass-assignment via the raw request body.
+const COMPETITION_EDITABLE = ['name', 'level', 'location', 'date_from', 'date_to', 'organizer', 'note'] as const;
+
 export async function updateCompetition(id: string, data: Partial<Competition>): Promise<Competition> {
-  return compRepo.update(id, data);
+  return compRepo.update(id, pick(data, COMPETITION_EDITABLE));
 }
 
 export async function deleteCompetition(id: string): Promise<void> {
@@ -125,8 +136,13 @@ export async function createResult(
   return resultRepo.insert(record);
 }
 
+// Descriptive fields a Coach/Admin may edit. `status` is intentionally excluded —
+// it can only change through approve()/reject() (Super-Admin-gated routes), so a
+// raw body cannot smuggle {status:'Approved'} past RBAC.
+const RESULT_EDITABLE = ['competition_name', 'date_from', 'date_to', 'category', 'rank', 'award', 'score', 'note'] as const;
+
 export async function updateResult(id: string, data: Partial<CompetitionResult>): Promise<CompetitionResult> {
-  return resultRepo.update(id, data);
+  return resultRepo.update(id, pick(data, RESULT_EDITABLE));
 }
 
 export async function deleteResult(id: string): Promise<void> {
