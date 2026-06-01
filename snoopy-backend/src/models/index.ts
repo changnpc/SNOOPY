@@ -66,6 +66,8 @@ export interface CompetitionResult {
   competition_id: string;   // optional FK; free-text name stored here when no linked competition
   competition_name: string; // free-text display name (required)
   user_id: string;
+  date_from?: string;       // competition start date (YYYY-MM-DD)
+  date_to?: string;         // competition end date (YYYY-MM-DD)
   category: string;
   rank: number | string;
   award: AwardType;

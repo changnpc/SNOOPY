@@ -186,6 +186,8 @@ export interface CompetitionResult {
   competition_id: string;
   competition_name: string;
   user_id: string;
+  date_from?: string;
+  date_to?: string;
   category: string;
   rank: number | string;
   award: AwardType;

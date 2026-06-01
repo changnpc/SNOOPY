@@ -68,6 +68,8 @@ export class CompetitionsComponent implements OnInit {
   initForm(): void {
     this.form = this.fb.group({
       competition_name: ['', Validators.required],
+      date_from:        [''],
+      date_to:          [''],
       category:         ['', Validators.required],
       rank:             [''],
       award:            [''],

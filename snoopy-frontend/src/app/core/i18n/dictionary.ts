@@ -31,6 +31,8 @@ export const EN: Record<string, string> = {
   'เพิ่ม': 'Add',
   'ค้นหา': 'Search',
   'ค้นหาชื่อนักกีฬา': 'Search athlete name',
+  'วันที่เริ่มแข่ง': 'Competition start date',
+  'วันที่สิ้นสุด': 'Competition end date',
   'ดูทั้งหมด': 'View all',
   'จัดการ': 'Manage',
   'ทุกทีม': 'All teams',

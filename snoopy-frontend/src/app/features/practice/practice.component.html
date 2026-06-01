@@ -26,16 +26,16 @@
     <div class="empty-state-sub" *ngIf="auth.isAdmin || auth.role==='Coach'">{{ 'กดปุ่ม "เพิ่มลิงก์ซ้อม" เพื่อเริ่มต้น' | t }}</div>
   </div>
 
-  <div *ngFor="let g of activeGroups; trackBy: trackByGroupDate" style="margin-bottom:24px">
-    <!-- Date header -->
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-      <div style="width:4px;height:24px;background:var(--primary);border-radius:2px"></div>
-      <h3 style="font-size:1rem;font-weight:700;color:var(--primary);margin:0">{{ (g.date | locDate:'full') }}</h3>
+  <div *ngFor="let g of activeGroups; trackBy: trackByGroupDate" style="margin-bottom:28px;background:var(--surface);border:var(--ink-border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+    <!-- Date header strip -->
+    <div style="background:var(--primary-faint);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:10px">
+      <span class="mi mi-sm" style="color:var(--primary)">calendar_month</span>
+      <h3 style="font-size:.95rem;font-weight:700;color:var(--primary);margin:0">{{ (g.date | locDate:'full') }}</h3>
     </div>
 
     <!-- Link cards -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">
-      <div *ngFor="let l of g.links; trackBy: trackByLinkId" class="card" style="padding:0;overflow:hidden">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;padding:16px">
+      <div *ngFor="let l of g.links; trackBy: trackByLinkId" class="card" style="padding:0;overflow:hidden;margin:0">
         <!-- Card header strip -->
         <div style="background:linear-gradient(135deg,var(--primary),var(--primary-light));padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
           <div style="color:white;font-weight:700;font-size:.95rem">

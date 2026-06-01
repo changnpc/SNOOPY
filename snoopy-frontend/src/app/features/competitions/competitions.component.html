@@ -33,9 +33,12 @@
         <div class="card-body">
           <div class="comp-header">
             <div class="comp-meta">
-              <span class="comp-date" *ngIf="r.competition?.date_from">
+              <span class="comp-date" *ngIf="r.date_from || r.competition?.date_from">
                 <span class="mi mi-sm">calendar_today</span>
-                {{ r.competition?.date_from | date:'dd MMM yyyy' }}
+                {{ (r.date_from || r.competition?.date_from) | date:'dd MMM yyyy' }}
+                <ng-container *ngIf="r.date_to && r.date_to !== r.date_from">
+                  — {{ r.date_to | date:'dd MMM yyyy' }}
+                </ng-container>
               </span>
             </div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -174,6 +177,18 @@
             <label class="form-label">{{ 'ชื่อรายการแข่งขัน' | t }} <span class="required">*</span></label>
             <input class="form-control" formControlName="competition_name"
                    [placeholder]="'เช่น Thailand Youth Bridge Championship 2025' | t" />
+          </div>
+
+          <!-- Dates -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group">
+              <label class="form-label">{{ 'วันที่เริ่มแข่ง' | t }}</label>
+              <app-date-picker formControlName="date_from" [placeholder]="'วันที่เริ่มแข่ง' | t"></app-date-picker>
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ 'วันที่สิ้นสุด' | t }}</label>
+              <app-date-picker formControlName="date_to" [placeholder]="'วันที่สิ้นสุด' | t"></app-date-picker>
+            </div>
           </div>
 
           <!-- Category -->

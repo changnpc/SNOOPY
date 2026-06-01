@@ -48,7 +48,7 @@
 <div *ngIf="loading" class="empty-state" style="padding:60px"><app-mascot [size]="96" mood="happy" [animate]="true"></app-mascot><p>{{ 'กำลังโหลด...' | t }}</p></div>
 
 <!-- Grid -->
-<div *ngIf="!loading" class="athletes-grid">
+<div *ngIf="!loading" class="athletes-grid" style="margin-top:20px">
   <div *ngIf="filtered.length === 0" style="grid-column:1/-1">
     <div class="empty-state">
       <app-mascot [size]="100" mood="sleep"></app-mascot>

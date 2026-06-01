@@ -110,6 +110,8 @@ export async function createResult(
     competition_id:   data.competition_id ?? '',
     competition_name: data.competition_name ?? data.competition_id ?? '',
     user_id:          data.user_id!,
+    date_from:        data.date_from ?? '',
+    date_to:          data.date_to ?? '',
     category:         data.category ?? '',
     rank:             data.rank ?? '',
     award:            data.award ?? '',
