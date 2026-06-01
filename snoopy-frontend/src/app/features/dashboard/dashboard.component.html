@@ -273,15 +273,23 @@
           {{ 'สรุปการซ้อม / แข่งขันของทีม' | t }}
         </div>
       </div>
+      <!-- Search + Filter bar -->
+      <div style="display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="position:relative;flex:1;min-width:160px">
+          <span class="mi" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:1.1rem;color:var(--text-muted);pointer-events:none">search</span>
+          <input type="text" [(ngModel)]="statsSearch" [placeholder]="'ค้นหาชื่อนักกีฬา' | t"
+                 style="width:100%;padding:7px 10px 7px 34px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text-primary);font-size:.88rem;box-sizing:border-box" />
+        </div>
+      </div>
       <div class="card-body" style="padding:0">
         <div *ngIf="coachTeamStatsLoading" class="empty-state" style="padding:24px">
           <span class="mi">hourglass_empty</span><p>{{ 'กำลังโหลด...' | t }}</p>
         </div>
-        <div *ngIf="!coachTeamStatsLoading && coachTeamStats.length === 0" class="empty-state" style="padding:24px">
+        <div *ngIf="!coachTeamStatsLoading && filteredStats.length === 0" class="empty-state" style="padding:24px">
           <span class="mi">groups</span><p>{{ 'ไม่มีข้อมูล' | t }}</p>
         </div>
         <!-- Card list — fully responsive, no horizontal scroll -->
-        <div *ngFor="let p of coachTeamStats; trackBy: trackByUserId" class="team-stat-row">
+        <div *ngFor="let p of filteredStats; trackBy: trackByUserId" class="team-stat-row">
           <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
             <img [src]="avatarFor(p)"
                  style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="" />
@@ -398,6 +406,61 @@
             <div style="flex:1;min-width:0"><div style="font-size:.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ act.title }}</div><div style="font-size:.75rem;color:var(--text-muted);margin-top:2px">{{ (act.date_from | locDate) }}</div></div>
           </div>
           <div *ngIf="recentActivities.length===0" class="empty-state" style="padding:24px"><div class="empty-state-title">{{ 'ยังไม่มีกิจกรรม' | t }}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin: Team Attendance Summary Table -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="mi mi-sm" style="color:var(--primary)">how_to_reg</span>
+          {{ 'สรุปการซ้อม / แข่งขันของทีม' | t }}
+        </div>
+      </div>
+      <!-- Search + Filter bar -->
+      <div style="display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="position:relative;flex:1;min-width:160px">
+          <span class="mi" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:1.1rem;color:var(--text-muted);pointer-events:none">search</span>
+          <input type="text" [(ngModel)]="statsSearch" [placeholder]="'ค้นหาชื่อนักกีฬา' | t"
+                 style="width:100%;padding:7px 10px 7px 34px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text-primary);font-size:.88rem;box-sizing:border-box" />
+        </div>
+        <select [(ngModel)]="statsFilterTeam"
+                style="padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text-primary);font-size:.88rem;min-width:140px">
+          <option value="">{{ 'ทุกทีม' | t }}</option>
+          <option *ngFor="let t of availableTeams" [value]="t.team_id">{{ t.team_name }}</option>
+        </select>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div *ngIf="coachTeamStatsLoading" class="empty-state" style="padding:24px">
+          <span class="mi">hourglass_empty</span><p>{{ 'กำลังโหลด...' | t }}</p>
+        </div>
+        <div *ngIf="!coachTeamStatsLoading && filteredStats.length === 0" class="empty-state" style="padding:24px">
+          <span class="mi">groups</span><p>{{ 'ไม่มีข้อมูล' | t }}</p>
+        </div>
+        <div *ngFor="let p of filteredStats; trackBy: trackByUserId" class="team-stat-row">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+            <img [src]="avatarFor(p)"
+                 style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="" />
+            <div style="min-width:0">
+              <div style="font-size:.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.th_name }}</div>
+              <div style="font-size:.72rem;color:var(--text-muted)">{{ teamNames[p.team_id] || p.team_id }}</div>
+            </div>
+          </div>
+          <div class="team-stat-nums">
+            <div class="team-stat-num" style="color:#2e7d32" [title]="'เข้าซ้อม' | t">
+              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ซ้อม' | t }}</span>{{ p.practice_days }}
+            </div>
+            <div class="team-stat-num" style="color:var(--danger)" [title]="'ขาด' | t">
+              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ขาด' | t }}</span>{{ p.absent_days }}
+            </div>
+            <div class="team-stat-num" style="color:var(--warning)" [title]="'ลา' | t">
+              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ลา' | t }}</span>{{ p.leave_days }}
+            </div>
+            <div class="team-stat-num" style="color:var(--primary)" [title]="'แข่งขัน' | t">
+              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'แข่ง' | t }}</span>{{ p.competition_count }}
+            </div>
+          </div>
         </div>
       </div>
     </div>

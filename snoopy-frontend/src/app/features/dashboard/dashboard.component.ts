@@ -34,6 +34,11 @@ export class DashboardComponent implements OnInit {
   coachTeamStatsLoading = true;
   myAttendanceStats: PlayerDashboardStats | null = null;
 
+  // Search / filter for Admin+Coach team stats table
+  statsSearch = '';
+  statsFilterTeam = '';
+  availableTeams: { team_id: string; team_name: string }[] = [];
+
   // Player
   playerStats = { myPendingLeave: 0, myTotalLeave: 0, upcomingEvents: 0, teamMates: 0 };
   myLeaves: any[] = [];
@@ -138,10 +143,20 @@ export class DashboardComponent implements OnInit {
         });
         const teams: any[] = (res.teams as any).success ? (res.teams as any).data : [];
         teams.forEach((t: any) => { this.teamNames[t.team_id] = t.team_name; });
+        this.availableTeams = teams.map((t: any) => ({ team_id: t.team_id, team_name: t.team_name }));
 
         this.loading = false;
       },
       error: () => { this.loading = false; }
+    });
+  }
+
+  get filteredStats(): CoachPlayerStats[] {
+    const q = this.statsSearch.trim().toLowerCase();
+    return this.coachTeamStats.filter(p => {
+      const matchName = !q || p.th_name.toLowerCase().includes(q) || p.en_name.toLowerCase().includes(q);
+      const matchTeam = !this.statsFilterTeam || p.team_id === this.statsFilterTeam;
+      return matchName && matchTeam;
     });
   }
 

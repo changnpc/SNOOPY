@@ -30,6 +30,7 @@ export const EN: Record<string, string> = {
   'ลบ': 'Delete',
   'เพิ่ม': 'Add',
   'ค้นหา': 'Search',
+  'ค้นหาชื่อนักกีฬา': 'Search athlete name',
   'ดูทั้งหมด': 'View all',
   'จัดการ': 'Manage',
   'ทุกทีม': 'All teams',

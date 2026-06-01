@@ -12,15 +12,23 @@ interface AttendanceRecord { player_id: string; status: AttendanceStatus; }
 interface CompetitionResult { user_id: string; competition_id: string; }
 interface User { user_id: string; team_id?: string; th_first_name: string; th_last_name: string; en_first_name: string; en_last_name: string; img_avatar_url?: string; is_active: string; }
 
-// ── Coach: team-wide summary (public — all roles can view for promotion) ──────
-router.get('/coach', async (_req: AuthRequest, res: Response) => {
+// ── Team summary: Super Admin = all, Coach = own team only ───────────────────
+router.get('/coach', async (req: AuthRequest, res: Response) => {
+  const { role, team_id: callerTeam } = req.user!;
   const [attendance, results, users] = await Promise.all([
     findAll<AttendanceRecord>(SHEETS.ATTENDANCE),
     findAll<CompetitionResult>(SHEETS.COMPETITION_RESULTS),
     findAll<User>(SHEETS.USERS),
   ]);
 
-  const active = users.filter(u => u.is_active === 'TRUE' || u.is_active === 'true');
+  let active = users.filter(u => u.is_active === 'TRUE' || u.is_active === 'true');
+  // Coach sees only their team; Super Admin sees all (optional ?team_id= filter)
+  if (role === 'Coach' && callerTeam) {
+    active = active.filter(u => u.team_id === callerTeam);
+  } else if (role === 'Super Admin') {
+    const qTeam = (req.query['team_id'] as string | undefined);
+    if (qTeam) active = active.filter(u => u.team_id === qTeam);
+  }
 
   // Count attendance per player
   const countMap = new Map<string, { practice: number; absent: number; leave: number }>();
