@@ -41,7 +41,6 @@
           <div style="color:white">
             <div style="font-size:.72rem;font-weight:500;opacity:.82;letter-spacing:.04em;text-transform:uppercase">Session</div>
             <div style="font-size:1.05rem;font-weight:800;line-height:1.2">{{ l.section }}</div>
-            <div *ngIf="l.team_id" style="font-size:.78rem;opacity:.85;margin-top:2px">{{ (l.team_id | teamName) }}</div>
           </div>
           <div *ngIf="auth.isAdmin || auth.role==='Coach'" style="display:flex;gap:6px">
             <button class="btn btn-sm" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.45)" (click)="openEdit(l)"><span class="mi mi-sm">edit</span></button>
