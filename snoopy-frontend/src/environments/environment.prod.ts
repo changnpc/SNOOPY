@@ -3,7 +3,7 @@ export const environment = {
   apiBaseUrl: '/api',
   googleClientId: '981018997625-ukjbtrft7qqhsiu71j7b1j9m0djigc19.apps.googleusercontent.com',
   appName: 'SNOOPY',
-  version: '1.0.0',
+  version: '1.2.0',
   author: 'Nattapong PIMPISAN',
   authorEmail: 'pimpisan.cblt@gmail.com',
   copyrightYear: 2026,
