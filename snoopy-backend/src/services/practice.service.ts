@@ -93,8 +93,14 @@ export async function updatePracticeLink(
   if (found.data.is_archived === 'TRUE') {
     throw Object.assign(new Error('ไม่สามารถแก้ไข Link ที่ Archive แล้ว'), { code: 'PRACTICE_LINK_ARCHIVED' });
   }
+  // Runtime whitelist — the type-level Pick doesn't strip extra body keys, so
+  // guard link_id/is_archived/created_* from mass-assignment via raw req.body.
+  const EDITABLE = ['practice_date', 'section', 'team_id', 'player_link', 'coach_link', 'note'] as const;
+  const patch: Record<string, any> = {};
+  for (const k of EDITABLE) if ((data as any)[k] !== undefined) patch[k] = (data as any)[k];
+
   const headers = await getHeaders(SHEETS.PRACTICE_LINKS);
-  const updated = { ...found.data, ...data, updated_at: nowStr() };
+  const updated = { ...found.data, ...patch, updated_at: nowStr() };
   const row = headers.map(h => String((updated as any)[h] ?? ''));
   await updateRow(SHEETS.PRACTICE_LINKS, found.rowIndex, row);
 
