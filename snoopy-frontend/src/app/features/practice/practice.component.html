@@ -35,12 +35,13 @@
 
     <!-- Link cards -->
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;padding:16px">
-      <div *ngFor="let l of g.links; trackBy: trackByLinkId" class="card" style="padding:0;overflow:hidden;margin:0">
-        <!-- Card header strip -->
-        <div style="background:linear-gradient(135deg,var(--primary),var(--primary-light));padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
-          <div style="color:white;font-weight:700;font-size:.95rem">
-            <span style="opacity:.75;font-size:.78rem;font-weight:500">Session {{ l.section }}</span><br/>
-            {{ (l.team_id | teamName) }}
+      <div *ngFor="let l of g.links; let i = index; trackBy: trackByLinkId" class="card" style="padding:0;overflow:hidden;margin:0">
+        <!-- Card header strip — color by session index -->
+        <div [style.background]="sessionColor(i).bg" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+          <div style="color:white">
+            <div style="font-size:.72rem;font-weight:500;opacity:.82;letter-spacing:.04em;text-transform:uppercase">Session</div>
+            <div style="font-size:1.05rem;font-weight:800;line-height:1.2">{{ l.section }}</div>
+            <div *ngIf="l.team_id" style="font-size:.78rem;opacity:.85;margin-top:2px">{{ (l.team_id | teamName) }}</div>
           </div>
           <div *ngIf="auth.isAdmin || auth.role==='Coach'" style="display:flex;gap:6px">
             <button class="btn btn-sm" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.45)" (click)="openEdit(l)"><span class="mi mi-sm">edit</span></button>
@@ -53,8 +54,9 @@
           <div>
             <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px;font-weight:600"><span class="mi mi-sm" style="vertical-align:-3px">link</span> {{ 'ลิงก์สำหรับนักกีฬา' | t }}</div>
             <a [href]="l.player_link | rbLink" target="_blank" rel="noopener"
-               class="btn btn-primary btn-sm"
-               style="width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
+               class="btn btn-sm"
+               [style.background]="sessionColor(i).btn" [style.border-color]="sessionColor(i).btn"
+               style="color:#fff;width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
               {{ 'เข้าร่วมห้องซ้อม' | t }}
             </a>
