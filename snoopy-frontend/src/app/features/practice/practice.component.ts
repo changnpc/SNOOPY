@@ -34,24 +34,22 @@ export class PracticeComponent extends CrudModalController<PracticeLink> {
     return this.teams.map(t => ({ value: t.team_id, label: t.team_name }));
   }
 
-  /** Distinct years in history data, descending. */
-  get historyYears(): string[] {
+  /** Distinct years as SelectOption[], descending. */
+  get historyYearOptions(): SelectOption[] {
     const years = new Set(this.historyGroups.map(g => g.date.slice(0, 4)));
-    return [...years].sort((a, b) => b.localeCompare(a));
+    return [...years].sort((a, b) => b.localeCompare(a)).map(y => ({ value: y, label: y }));
   }
 
-  /** Distinct months (01–12) that exist for the selected year (or all years). */
-  get historyMonths(): { value: string; label: string }[] {
+  /** Distinct months as SelectOption[] for selected year (or all), ascending. */
+  get historyMonthOptions(): SelectOption[] {
     const source = this.historyFilterYear
       ? this.historyGroups.filter(g => g.date.startsWith(this.historyFilterYear))
       : this.historyGroups;
     const months = new Set(source.map(g => g.date.slice(5, 7)));
-    return [...months]
-      .sort()
-      .map(m => ({
-        value: m,
-        label: new Date(`2000-${m}-01`).toLocaleDateString('th-TH', { month: 'long' }),
-      }));
+    return [...months].sort().map(m => ({
+      value: m,
+      label: new Date(`2000-${m}-01`).toLocaleDateString('th-TH', { month: 'long' }),
+    }));
   }
 
   get activeGroups(): GroupedLinks[] {
