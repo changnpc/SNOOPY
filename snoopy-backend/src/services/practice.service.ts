@@ -20,8 +20,17 @@ export async function getPracticeLinks(
 ): Promise<PracticeLink[]> {
   let all = await findAll<PracticeLink>(SHEETS.PRACTICE_LINKS);
   const today = todayStr();
-  // Treat past-date links as archived even if the cron hasn't run yet
-  // (handles Railway cold-start / process restart that may skip the nightly cron).
+
+  // Lazy archive: if any non-archived link is past its date, flush to Sheet now.
+  // This ensures Sheet data stays accurate even when the nightly cron was skipped
+  // due to Railway cold-start / process restart.
+  const stale = all.filter(l => l.is_archived !== 'TRUE' && l.practice_date < today);
+  if (stale.length > 0) {
+    archiveExpiredLinks().catch(err =>
+      console.warn('[practice] lazy archive failed:', err)
+    );
+  }
+
   all = all.filter(l => {
     const isArchived = l.is_archived === 'TRUE' || l.practice_date < today;
     return isArchived === archived;

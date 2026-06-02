@@ -157,3 +157,11 @@ export default app;
 import('./jobs/archive-practice-links.job').then(({ startArchiveCronJob }) => {
   startArchiveCronJob();
 });
+
+// Run archive once at startup to catch any links that expired while the
+// server was down (Railway sleep / cold-start / missed cron window).
+import('./services/practice.service').then(({ archiveExpiredLinks }) => {
+  archiveExpiredLinks()
+    .then(n => { if (n > 0) console.log(`[Startup] Archived ${n} expired practice links`); })
+    .catch(err => console.warn('[Startup] archive failed:', err));
+});
