@@ -19,8 +19,13 @@ export async function getPracticeLinks(
   archived = false
 ): Promise<PracticeLink[]> {
   let all = await findAll<PracticeLink>(SHEETS.PRACTICE_LINKS);
-  // Filter by archived
-  all = all.filter(l => (l.is_archived === 'TRUE') === archived);
+  const today = todayStr();
+  // Treat past-date links as archived even if the cron hasn't run yet
+  // (handles Railway cold-start / process restart that may skip the nightly cron).
+  all = all.filter(l => {
+    const isArchived = l.is_archived === 'TRUE' || l.practice_date < today;
+    return isArchived === archived;
+  });
   // RBAC: Coach/Player see only own team + All Teams (team_id = '')
   if (requester.role !== 'Super Admin') {
     all = all.filter(l => !l.team_id || l.team_id === requester.team_id);
