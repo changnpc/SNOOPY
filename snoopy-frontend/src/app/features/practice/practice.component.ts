@@ -34,44 +34,38 @@ export class PracticeComponent extends CrudModalController<PracticeLink> {
     return this.teams.map(t => ({ value: t.team_id, label: t.team_name }));
   }
 
-  /** Distinct year-month combos available in history, newest first. */
-  get historyYearMonths(): { year: string; month: string; label: string }[] {
-    const seen = new Set<string>();
-    const out: { year: string; month: string; label: string }[] = [];
-    for (const g of [...this.historyGroups].sort((a, b) => b.date.localeCompare(a.date))) {
-      const [y, m] = g.date.split('-');
-      const key = `${y}-${m}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        const d = new Date(`${y}-${m}-01`);
-        const label = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'long' });
-        out.push({ year: y, month: m, label });
-      }
-    }
-    return out;
+  /** Distinct years in history data, descending. */
+  get historyYears(): string[] {
+    const years = new Set(this.historyGroups.map(g => g.date.slice(0, 4)));
+    return [...years].sort((a, b) => b.localeCompare(a));
+  }
+
+  /** Distinct months (01–12) that exist for the selected year (or all years). */
+  get historyMonths(): { value: string; label: string }[] {
+    const source = this.historyFilterYear
+      ? this.historyGroups.filter(g => g.date.startsWith(this.historyFilterYear))
+      : this.historyGroups;
+    const months = new Set(source.map(g => g.date.slice(5, 7)));
+    return [...months]
+      .sort()
+      .map(m => ({
+        value: m,
+        label: new Date(`2000-${m}-01`).toLocaleDateString('th-TH', { month: 'long' }),
+      }));
   }
 
   get activeGroups(): GroupedLinks[] {
     if (this.tab === 'current') return this.groups;
     let filtered = this.historyGroups;
-    if (this.historyFilterYear && this.historyFilterMonth) {
-      filtered = filtered.filter(g =>
-        g.date.startsWith(`${this.historyFilterYear}-${this.historyFilterMonth}`)
-      );
-    }
+    // AND condition: filter year first, then month independently
+    if (this.historyFilterYear)  filtered = filtered.filter(g => g.date.startsWith(this.historyFilterYear));
+    if (this.historyFilterMonth) filtered = filtered.filter(g => g.date.slice(5, 7) === this.historyFilterMonth);
     return [...filtered].sort((a, b) =>
       this.historySortAsc ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date)
     );
   }
 
-  selectHistoryPeriod(year: string, month: string): void {
-    this.historyFilterYear  = year;
-    this.historyFilterMonth = month;
-  }
-  clearHistoryFilter(): void {
-    this.historyFilterYear  = '';
-    this.historyFilterMonth = '';
-  }
+  onYearChange(): void { this.historyFilterMonth = ''; } // reset month when year changes
   toggleHistorySort(): void { this.historySortAsc = !this.historySortAsc; }
 
   constructor(

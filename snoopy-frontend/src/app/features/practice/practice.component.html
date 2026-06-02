@@ -74,18 +74,20 @@
 <!-- ══ PAST HISTORY — compact list view ══ -->
 <div *ngIf="tab==='history'">
 
-  <!-- Toolbar: period filter chips + sort button -->
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-    <!-- All chip -->
-    <button class="team-chip" [class.active]="!historyFilterYear" (click)="clearHistoryFilter()">
-      {{ 'ทั้งหมด' | t }}
-    </button>
-    <!-- Year-month chips -->
-    <button *ngFor="let ym of historyYearMonths"
-            class="team-chip" [class.active]="historyFilterYear===ym.year && historyFilterMonth===ym.month"
-            (click)="selectHistoryPeriod(ym.year, ym.month)">
-      {{ ym.label }}
-    </button>
+  <!-- Toolbar: year dropdown + month dropdown + sort -->
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+    <!-- Year dropdown -->
+    <select [(ngModel)]="historyFilterYear" (ngModelChange)="onYearChange()"
+            style="padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text-primary);font-size:.88rem">
+      <option value="">{{ 'ทุกปี' | t }}</option>
+      <option *ngFor="let y of historyYears" [value]="y">{{ y }}</option>
+    </select>
+    <!-- Month dropdown -->
+    <select [(ngModel)]="historyFilterMonth"
+            style="padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text-primary);font-size:.88rem">
+      <option value="">{{ 'ทุกเดือน' | t }}</option>
+      <option *ngFor="let m of historyMonths" [value]="m.value">{{ m.label }}</option>
+    </select>
     <!-- Spacer -->
     <span style="flex:1"></span>
     <!-- Sort toggle -->
@@ -120,20 +122,20 @@
         </span>
         <!-- Spacer -->
         <span style="flex:1"></span>
-        <!-- Link icons — player + coach grouped together -->
-        <div style="display:flex;align-items:center;gap:4px">
-          <!-- Player icon link -->
+        <!-- Link buttons — player + coach grouped together -->
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <!-- Player link -->
           <a [href]="l.player_link | rbLink" target="_blank" rel="noopener"
-             class="btn btn-sm btn-outline" style="padding:5px 8px;gap:4px;text-decoration:none"
-             [title]="'ลิงก์นักกีฬา' | t">
+             class="btn btn-sm btn-outline" style="gap:5px;text-decoration:none;white-space:nowrap">
             <span class="mi mi-sm">person</span>
+            {{ 'นักกีฬา' | t }}
           </a>
-          <!-- Coach icon link -->
+          <!-- Coach link -->
           <a *ngIf="(auth.isAdmin || auth.role==='Coach') && l.coach_link"
              [href]="l.coach_link | rbLink" target="_blank" rel="noopener"
-             class="btn btn-sm btn-ghost" style="padding:5px 8px;gap:4px;text-decoration:none"
-             [title]="'ลิงก์โค้ช' | t">
+             class="btn btn-sm btn-ghost" style="gap:5px;text-decoration:none;white-space:nowrap">
             <span class="mi mi-sm">sports</span>
+            {{ 'โค้ช' | t }}
           </a>
         </div>
         <!-- Delete (admin only) -->

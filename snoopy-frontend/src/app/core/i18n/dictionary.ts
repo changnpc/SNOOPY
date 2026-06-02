@@ -34,6 +34,8 @@ export const EN: Record<string, string> = {
   'ใหม่สุดก่อน': 'Newest first',
   'ยังไม่มีประวัติ': 'No history yet',
   'ลิงก์นักกีฬา': 'Player link',
+  'ทุกปี': 'All years',
+  'ทุกเดือน': 'All months',
   'ค้นหาชื่อนักกีฬา': 'Search athlete name',
   'วันที่เริ่มแข่ง': 'Competition start date',
   'วันที่สิ้นสุด': 'Competition end date',
