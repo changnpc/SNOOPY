@@ -6,8 +6,8 @@ import { Activity, ApiResponse } from '../../models';
 export class ActivitiesService {
   constructor(private api: ApiService) {}
 
-  getAll() {
-    return this.api.get<ApiResponse<Activity[]>>('/activities');
+  getAll(archived = false) {
+    return this.api.get<ApiResponse<Activity[]>>(`/activities${archived ? '?archived=true' : ''}`);
   }
 
   create(formData: FormData) {

@@ -11,8 +11,17 @@ import { Activity, ApiResponse } from '../../models';
 export class ActivityComponent extends CrudModalController<Activity> {
   selectedAttachment: File | null = null;
 
+  /** 'current' = upcoming/ongoing · 'history' = archived/past */
+  tab: 'current' | 'history' = 'current';
+
   /** Template alias for the inherited generic list. */
   get activities(): Activity[] { return this.items; }
+
+  switchTab(tab: 'current' | 'history'): void {
+    if (this.tab === tab) return;
+    this.tab = tab;
+    this.load();
+  }
 
   /** True if URL is a Google Maps link → show a "Maps" button instead. */
   isMapLink(url?: string): boolean {
@@ -28,7 +37,7 @@ export class ActivityComponent extends CrudModalController<Activity> {
 
   // ── CRUD hooks ──────────────────────────────────────────
   protected entityId(a: Activity): string { return a.activity_id; }
-  protected fetch(): Observable<ApiResponse<Activity[]>> { return this.svc.getAll() as any; }
+  protected fetch(): Observable<ApiResponse<Activity[]>> { return this.svc.getAll(this.tab === 'history') as any; }
   protected createReq(p: unknown) { return this.svc.create(p as FormData); }
   protected updateReq(id: string, p: unknown) { return this.svc.update(id, p as FormData); }
   protected deleteReq(id: string) { return this.svc.delete(id); }

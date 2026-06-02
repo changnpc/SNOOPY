@@ -133,6 +133,8 @@ export const EN: Record<string, string> = {
   'ยังไม่มีรายการลา': 'No leave records yet',
   'ไม่มีรายการค้าง': 'Nothing pending',
   'ยังไม่มีกิจกรรม': 'No activities yet',
+  'กิจกรรมปัจจุบัน': 'Current',
+  'ไม่มีกิจกรรมที่ผ่านมา': 'No past activities',
   'รอ': 'Pending',
 
   // ── Athletes ──

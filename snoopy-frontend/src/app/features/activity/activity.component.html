@@ -4,14 +4,20 @@
     <div><h2>{{ 'กิจกรรม' | t }}</h2><p>{{ 'ข่าวสารและกิจกรรมของทีมชาติ' | t }}</p></div>
   </div>
   <div class="page-header-actions">
-    <button *ngIf="auth.isAdmin" class="btn btn-primary" (click)="openCreate()"><span class="mi mi-sm">add</span> {{ 'สร้างกิจกรรม' | t }}</button>
+    <button *ngIf="auth.isAdmin && tab==='current'" class="btn btn-primary" (click)="openCreate()"><span class="mi mi-sm">add</span> {{ 'สร้างกิจกรรม' | t }}</button>
   </div>
+</div>
+
+<!-- Tabs -->
+<div class="tab-bar" style="margin-bottom:20px">
+  <button class="tab-btn" [class.active]="tab==='current'" (click)="switchTab('current')">{{ 'กิจกรรมปัจจุบัน' | t }}</button>
+  <button class="tab-btn" [class.active]="tab==='history'" (click)="switchTab('history')">{{ 'ประวัติย้อนหลัง' | t }}</button>
 </div>
 
 <div *ngIf="loading" class="empty-state" style="padding:60px"><app-mascot [size]="96" mood="happy" [animate]="true"></app-mascot><p>{{ 'กำลังโหลด...' | t }}</p></div>
 
 <div class="activity-list" *ngIf="!loading">
-  <div *ngIf="activities.length===0"><div class="empty-state"><app-mascot [size]="100" mood="happy"></app-mascot><div class="empty-state-title">{{ 'ยังไม่มีกิจกรรม' | t }}</div></div></div>
+  <div *ngIf="activities.length===0"><div class="empty-state"><app-mascot [size]="100" [mood]="tab==='history' ? 'sleep' : 'happy'"></app-mascot><div class="empty-state-title">{{ (tab==='history' ? 'ไม่มีกิจกรรมที่ผ่านมา' : 'ยังไม่มีกิจกรรม') | t }}</div></div></div>
 
   <div *ngFor="let a of activities; let i = index; trackBy: trackByActivityId" class="act-card" [attr.data-color]="colorClass(i)">
     <div class="act-card-side">
@@ -33,7 +39,7 @@
       <!-- details -->
       <div class="act-card-detail">{{ a.details }}</div>
       <!-- footer: links + admin actions on same row -->
-      <div class="act-card-footer" *ngIf="a.url || a.attachment_url || auth.isAdmin">
+      <div class="act-card-footer" *ngIf="a.url || a.attachment_url || (auth.isAdmin && tab==='current')">
         <div class="act-card-links">
           <a *ngIf="a.url" [href]="a.url | rbLink" target="_blank" rel="noopener" class="act-link act-link-url">
             <span class="mi mi-sm">{{ isMapLink(a.url) ? 'map' : 'open_in_new' }}</span>
@@ -43,7 +49,7 @@
             <span class="mi mi-sm">attach_file</span> {{ a.attachment_name || ('ดาวน์โหลดเอกสาร' | t) }}
           </a>
         </div>
-        <div *ngIf="auth.isAdmin" class="act-card-actions">
+        <div *ngIf="auth.isAdmin && tab==='current'" class="act-card-actions">
           <button class="btn btn-ghost btn-sm" (click)="openEdit(a)"><span class="mi mi-sm">edit</span> {{ 'แก้ไข' | t }}</button>
           <button class="btn btn-danger btn-sm" (click)="delete(a)"><span class="mi mi-sm">delete</span> {{ 'ลบ' | t }}</button>
         </div>

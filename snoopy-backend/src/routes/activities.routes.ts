@@ -9,8 +9,9 @@ import { ok, fail } from '../models';
 const router = Router();
 router.use(authenticate);
 
-router.get('/', async (_req, res: Response) => {
-  const activities = await getActivities();
+router.get('/', async (req, res: Response) => {
+  const archived = req.query['archived'] === 'true';
+  const activities = await getActivities(archived);
   res.json(ok(activities));
 });
 

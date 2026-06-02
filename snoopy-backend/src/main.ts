@@ -165,3 +165,8 @@ import('./services/practice.service').then(({ archiveExpiredLinks }) => {
     .then(n => { if (n > 0) console.log(`[Startup] Archived ${n} expired practice links`); })
     .catch(err => console.warn('[Startup] archive failed:', err));
 });
+import('./services/activities.service').then(({ archiveExpiredActivities }) => {
+  archiveExpiredActivities()
+    .then(n => { if (n > 0) console.log(`[Startup] Archived ${n} expired activities`); })
+    .catch(err => console.warn('[Startup] archive failed:', err));
+});

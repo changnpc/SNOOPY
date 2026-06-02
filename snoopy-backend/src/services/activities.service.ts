@@ -1,5 +1,6 @@
 import { SHEETS } from '../config/sheets.config';
-import { nowStr } from '../utils/date';
+import { nowStr, todayStr } from '../utils/date';
+import { findAll, getHeaders, updateRow } from './google-sheets.service';
 import { createNotification } from './notifications.service';
 import { deleteEventsByRefId, updateEventsByRefId } from './events.service';
 import { SheetRepository, TombstoneTitle } from './base/sheet-repository';
@@ -9,15 +10,57 @@ export interface Activity {
   location: string; details: string; img_url: string;
   url: string;
   attachment_url: string; attachment_name: string;
+  is_archive: string;
   created_by: string; created_at: string; updated_at: string;
 }
 
 const repo = new SheetRepository<Activity>(SHEETS.ACTIVITIES, 'activity_id', 'ACT', 'ACTIVITY_NOT_FOUND', 'ไม่พบกิจกรรม');
 
-export async function getActivities(): Promise<Activity[]> {
-  const all = await repo.findAll();
-  // Ascending by date_from: nearest upcoming activity first.
-  return all.sort((a, b) => a.date_from.localeCompare(b.date_from));
+/**
+ * Get activities — current (upcoming/ongoing) or archived (past).
+ * "Archived" = is_archive === 'TRUE' OR date_to is past.
+ * Lazy-flushes stale rows to the Sheet (covers skipped cron on cold-start).
+ */
+export async function getActivities(archived = false): Promise<Activity[]> {
+  const all = (await repo.findAll()).filter(a => a.title !== '[DELETED]');
+  const today = todayStr();
+
+  const stale = all.filter(a => a.is_archive !== 'TRUE' && a.date_to < today);
+  if (stale.length > 0) {
+    archiveExpiredActivities().catch(err =>
+      console.warn('[activities] lazy archive failed:', err)
+    );
+  }
+
+  const filtered = all.filter(a => {
+    const isArchived = a.is_archive === 'TRUE' || a.date_to < today;
+    return isArchived === archived;
+  });
+
+  // Current → ascending (nearest first). Archived → descending (most recent first).
+  return filtered.sort((a, b) =>
+    archived ? b.date_from.localeCompare(a.date_from) : a.date_from.localeCompare(b.date_from)
+  );
+}
+
+// ─── Auto-archive expired activities (cron + lazy + startup) ──
+export async function archiveExpiredActivities(): Promise<number> {
+  const today = todayStr();
+  const all = await findAll<Activity>(SHEETS.ACTIVITIES);
+  const headers = await getHeaders(SHEETS.ACTIVITIES);
+  let count = 0;
+
+  for (let i = 0; i < all.length; i++) {
+    const a = all[i];
+    if (a.title !== '[DELETED]' && a.date_to < today && a.is_archive !== 'TRUE') {
+      const updated = { ...a, is_archive: 'TRUE', updated_at: nowStr() };
+      const row = headers.map(h => String((updated as any)[h] ?? ''));
+      await updateRow(SHEETS.ACTIVITIES, i + 2, row); // +2 for header row
+      count++;
+    }
+  }
+  console.log(`[CronJob] Archived ${count} expired activities`);
+  return count;
 }
 
 export async function createActivity(data: Partial<Activity>, createdBy: string): Promise<Activity> {
@@ -32,6 +75,7 @@ export async function createActivity(data: Partial<Activity>, createdBy: string)
     url:             data.url ?? '',
     attachment_url:  data.attachment_url ?? '',
     attachment_name: data.attachment_name ?? '',
+    is_archive:      'FALSE',
     created_by:      createdBy,
     created_at:  nowStr(),
     updated_at:  nowStr(),
