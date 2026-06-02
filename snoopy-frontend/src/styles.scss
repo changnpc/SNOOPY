@@ -1578,6 +1578,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   animation: ap-pop-in .38s cubic-bezier(.34,1.56,.64,1) both;
   overflow: hidden;
   position: relative;
+  border-radius: 0 !important;
 }
 
 /* Hero gradient banner */
