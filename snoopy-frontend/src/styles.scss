@@ -589,22 +589,37 @@ ul { list-style: none; }
 .practice-day-header {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(100deg, var(--primary-faint), color-mix(in srgb, var(--primary-faint) 60%, var(--surface)));
-  border-bottom: 2px solid var(--primary-light);
-  padding: 11px 18px;
+  /* sky → meadow gradient */
+  background: linear-gradient(180deg, #d6edfb 0%, var(--primary-faint) 45%, #e7f6e4 100%);
+  padding: 11px 18px 18px;   /* extra bottom space for grass strip */
   display: flex;
   align-items: center;
   gap: 10px;
 }
+/* grass tufts along the bottom edge */
+.practice-day-header::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 11px;
+  background:
+    radial-gradient(circle at 7px 11px, #5cb054 6.5px, transparent 7.5px) repeat-x,
+    radial-gradient(circle at 14px 12px, #4f9d4a 5px, transparent 6px) repeat-x;
+  background-size: 16px 11px, 16px 11px;
+  pointer-events: none;
+}
+[data-theme="dark"] .practice-day-header {
+  background: linear-gradient(180deg, rgba(45,125,210,.18) 0%, rgba(45,125,210,.10) 45%, rgba(79,157,74,.18) 100%);
+}
 .practice-day-suits {
   position: absolute;
   right: 14px;
-  top: 50%;
+  top: 44%;
   transform: translateY(-50%);
   font-size: 1.8rem;
   letter-spacing: 4px;
   color: var(--primary);
-  opacity: .1;
+  opacity: .12;
   pointer-events: none;
   user-select: none;
 }
@@ -2310,6 +2325,8 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 }
 
 .act-card-side {
+  position: relative;
+  overflow: hidden;
   width: 56px;
   flex-shrink: 0;
   background: var(--_cb, #eef2ff);
@@ -2321,6 +2338,21 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   .act-card-icon {
     font-size: 1.4rem;
     color: var(--_c, #4f46e5);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* grass tufts along the bottom — shared meadow motif */
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 10px;
+    background:
+      radial-gradient(circle at 6px 10px, #5cb054 5.5px, transparent 6.5px) repeat-x,
+      radial-gradient(circle at 12px 11px, #4f9d4a 4.5px, transparent 5.5px) repeat-x;
+    background-size: 14px 10px, 14px 10px;
+    pointer-events: none;
   }
 }
 
