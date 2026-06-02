@@ -57,7 +57,8 @@
           <div class="activity-popup-details" *ngIf="a.details">{{ a.details }}</div>
           <a *ngIf="a.url" [href]="a.url" target="_blank" rel="noopener"
              class="btn btn-outline btn-sm ap-link-btn">
-            <span class="mi mi-sm">open_in_new</span> {{ 'เปิดลิงก์' | t }}
+            <span class="mi mi-sm">{{ isMapLink(a.url) ? 'map' : 'open_in_new' }}</span>
+            {{ (isMapLink(a.url) ? 'Maps' : 'เปิดลิงก์') | t }}
           </a>
         </div>
 

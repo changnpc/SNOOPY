@@ -33,7 +33,8 @@
       <div class="act-card-footer" *ngIf="a.url || a.attachment_url || auth.isAdmin">
         <div class="act-card-links">
           <a *ngIf="a.url" [href]="a.url | rbLink" target="_blank" rel="noopener" class="act-link act-link-url">
-            <span class="mi mi-sm">open_in_new</span> {{ 'เปิดลิงก์' | t }}
+            <span class="mi mi-sm">{{ isMapLink(a.url) ? 'map' : 'open_in_new' }}</span>
+            {{ (isMapLink(a.url) ? 'Maps' : 'เปิดลิงก์') | t }}
           </a>
           <a *ngIf="a.attachment_url" [href]="a.attachment_url" target="_blank" rel="noopener" class="act-link act-link-file">
             <span class="mi mi-sm">attach_file</span> {{ a.attachment_name || ('ดาวน์โหลดเอกสาร' | t) }}

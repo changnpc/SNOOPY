@@ -14,6 +14,11 @@ export class ActivityComponent extends CrudModalController<Activity> {
   /** Template alias for the inherited generic list. */
   get activities(): Activity[] { return this.items; }
 
+  /** True if URL is a Google Maps link → show a "Maps" button instead. */
+  isMapLink(url?: string): boolean {
+    return !!url && /maps\.app\.goo\.gl|google\.[a-z.]+\/maps|goo\.gl\/maps/i.test(url);
+  }
+
   constructor(
     public auth: AuthService,
     private svc: ActivitiesService,

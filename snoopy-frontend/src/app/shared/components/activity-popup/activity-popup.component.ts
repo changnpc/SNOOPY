@@ -80,4 +80,8 @@ export class ActivityPopupComponent implements OnInit, OnDestroy {
   }
 
   close(): void { this.show = false; }
+
+  isMapLink(url?: string): boolean {
+    return !!url && /maps\.app\.goo\.gl|google\.[a-z.]+\/maps|goo\.gl\/maps/i.test(url);
+  }
 }
