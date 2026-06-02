@@ -16,16 +16,28 @@
       </div>
     </div>
     <div class="cal-grid">
-      <div class="cal-day-header" *ngFor="let d of dayHeaders">{{ d }}</div>
+      <div class="cal-day-header"
+           *ngFor="let d of dayHeaders; let i = index"
+           [class.weekend]="i === 0 || i === 6">{{ d }}</div>
       <ng-container *ngFor="let week of weeks">
         <div *ngFor="let day of week"
              class="cal-cell"
              [class.other-month]="day.isOtherMonth"
              [class.today]="day.isToday"
+             [class.weekend]="day.date && (day.date.getDay() === 0 || day.date.getDay() === 6)"
+             [class.has-events]="day.events.length"
              (click)="clickDay(day)">
-          <div class="cal-date">{{ day.date?.getDate() }}</div>
-          <div *ngFor="let ev of day.events.slice(0,2)" class="cal-event" [style.background]="ev.color" (click)="clickEvent(ev, $event)">{{ ev.title }}</div>
-          <div *ngIf="day.events.length > 2" class="cal-event-more" (click)="showMore(day, $event)">+{{ day.events.length-2 }} เพิ่มเติม</div>
+          <div class="cal-date">
+            <span class="cal-date-num">{{ day.date?.getDate() }}</span>
+          </div>
+          <div *ngFor="let ev of day.events.slice(0,2)" class="cal-event" [style.background]="ev.color" (click)="clickEvent(ev, $event)">
+            <span class="cal-event-dot"></span>{{ ev.title }}
+          </div>
+          <div *ngIf="day.events.length > 2" class="cal-event-more" (click)="showMore(day, $event)">+{{ day.events.length-2 }} {{ 'เพิ่มเติม' | t }}</div>
+          <!-- Hover add hint for empty editable cells -->
+          <div *ngIf="!day.isOtherMonth && !day.events.length && (auth.isAdmin || auth.isCoach)" class="cal-add-hint">
+            <span class="mi mi-sm">add</span>
+          </div>
         </div>
       </ng-container>
     </div>
