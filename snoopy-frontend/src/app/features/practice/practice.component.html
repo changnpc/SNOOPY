@@ -19,7 +19,8 @@
 
 <div *ngIf="loading && tab==='current'" class="empty-state" style="padding:60px"><app-mascot [size]="96" mood="happy" [animate]="true"></app-mascot><p>{{ 'กำลังโหลด...' | t }}</p></div>
 
-<div *ngIf="!(loading && tab==='current')">
+<!-- ══ CURRENT LINKS — card grid ══ -->
+<div *ngIf="tab==='current' && !(loading && tab==='current')">
   <div *ngIf="activeGroups.length === 0" class="empty-state" style="padding:60px 24px">
     <app-mascot [size]="100" mood="sleep"></app-mascot>
     <div class="empty-state-title">{{ 'ไม่มีลิงก์ซ้อม' | t }}</div>
@@ -27,16 +28,12 @@
   </div>
 
   <div *ngFor="let g of activeGroups; trackBy: trackByGroupDate" style="margin-bottom:28px;background:var(--surface);border:var(--ink-border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
-    <!-- Date header strip -->
     <div style="background:var(--primary-faint);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:10px">
       <span class="mi mi-sm" style="color:var(--primary)">calendar_month</span>
       <h3 style="font-size:.95rem;font-weight:700;color:var(--primary);margin:0">{{ (g.date | locDate:'full') }}</h3>
     </div>
-
-    <!-- Link cards -->
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;padding:16px">
       <div *ngFor="let l of g.links; let i = index; trackBy: trackByLinkId" class="card" style="padding:0;overflow:hidden;margin:0">
-        <!-- Card header strip — color by session index -->
         <div [style.background]="sessionColor(i).bg" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
           <div style="color:white">
             <div style="font-size:.72rem;font-weight:500;opacity:.82;letter-spacing:.04em;text-transform:uppercase">Session</div>
@@ -47,38 +44,78 @@
             <button class="btn btn-sm" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.45)" (click)="delete(l)" [disabled]="deletingId===l.link_id"><span class="mi mi-sm">delete</span></button>
           </div>
         </div>
-
         <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
-          <!-- Player link (always visible) -->
           <div>
             <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px;font-weight:600"><span class="mi mi-sm" style="vertical-align:-3px">link</span> {{ 'ลิงก์สำหรับนักกีฬา' | t }}</div>
-            <a [href]="l.player_link | rbLink" target="_blank" rel="noopener"
-               class="btn btn-sm"
+            <a [href]="l.player_link | rbLink" target="_blank" rel="noopener" class="btn btn-sm"
                [style.background]="sessionColor(i).btn" [style.border-color]="sessionColor(i).btn"
                style="color:#fff;width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
               {{ 'เข้าร่วมห้องซ้อม' | t }}
             </a>
           </div>
-
-          <!-- Coach link (for coaches/admins only) -->
           <div *ngIf="(auth.isAdmin || auth.role==='Coach') && l.coach_link">
             <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px;font-weight:600"><span class="mi mi-sm" style="vertical-align:-3px">sports</span> {{ 'ลิงก์สำหรับโค้ช' | t }}</div>
-            <a [href]="l.coach_link | rbLink" target="_blank" rel="noopener"
-               class="btn btn-ghost btn-sm"
+            <a [href]="l.coach_link | rbLink" target="_blank" rel="noopener" class="btn btn-ghost btn-sm"
                style="width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
               {{ 'เข้าร่วม (โค้ช)' | t }}
             </a>
           </div>
-
-          <!-- Note -->
           <div *ngIf="l.note" style="font-size:.82rem;color:var(--text-secondary);background:var(--bg-muted);border-radius:6px;padding:8px 10px">
             <span class="mi mi-sm" style="vertical-align:-3px">sticky_note_2</span> {{ l.note }}
           </div>
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ══ PAST HISTORY — compact list view ══ -->
+<div *ngIf="tab==='history'">
+  <div *ngIf="activeGroups.length === 0" class="empty-state" style="padding:60px 24px">
+    <app-mascot [size]="100" mood="sleep"></app-mascot>
+    <div class="empty-state-title">{{ 'ยังไม่มีประวัติ' | t }}</div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <ng-container *ngFor="let g of activeGroups; trackBy: trackByGroupDate">
+      <!-- Date divider row -->
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--border)">
+        <span class="mi mi-sm" style="color:var(--text-muted);font-size:.9rem">event</span>
+        <span style="font-size:.82rem;font-weight:700;color:var(--text-secondary)">{{ (g.date | locDate:'full') }}</span>
+      </div>
+      <!-- Link rows -->
+      <div *ngFor="let l of g.links; trackBy: trackByLinkId"
+           style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border)">
+        <!-- Session badge -->
+        <span style="font-size:.72rem;font-weight:700;color:#fff;background:var(--text-muted);border-radius:4px;padding:2px 7px;flex-shrink:0;white-space:nowrap">
+          {{ l.section }}
+        </span>
+        <!-- Team -->
+        <span *ngIf="l.team_id" style="font-size:.8rem;color:var(--text-muted);flex-shrink:0">{{ (l.team_id | teamName) }}</span>
+        <span *ngIf="!l.team_id" style="font-size:.8rem;color:var(--text-muted);flex-shrink:0">{{ 'ทุกทีม' | t }}</span>
+        <!-- Player link -->
+        <a [href]="l.player_link | rbLink" target="_blank" rel="noopener"
+           style="font-size:.82rem;color:var(--primary);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"
+           title="{{ l.player_link }}">
+          <span class="mi mi-sm" style="vertical-align:-3px;font-size:.9rem">link</span>
+          {{ 'ลิงก์นักกีฬา' | t }}
+        </a>
+        <!-- Coach link -->
+        <a *ngIf="(auth.isAdmin || auth.role==='Coach') && l.coach_link"
+           [href]="l.coach_link | rbLink" target="_blank" rel="noopener"
+           style="font-size:.82rem;color:var(--text-secondary);text-decoration:none;flex-shrink:0">
+          <span class="mi mi-sm" style="vertical-align:-3px;font-size:.9rem">sports</span>
+          {{ 'โค้ช' | t }}
+        </a>
+        <!-- Delete (admin only) -->
+        <button *ngIf="auth.isAdmin" class="btn btn-sm btn-ghost" style="flex-shrink:0;padding:4px 8px"
+                (click)="delete(l)" [disabled]="deletingId===l.link_id">
+          <span class="mi mi-sm" style="color:var(--danger)">delete</span>
+        </button>
+      </div>
+    </ng-container>
   </div>
 </div>
 
