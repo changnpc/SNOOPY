@@ -4348,6 +4348,62 @@ input[type="file"].form-control {
   min-width: 36px;
 }
 
+/* ── Dashboard team-stats: clean grid table ──────────────── */
+$ts-cols: 1fr 52px 52px 52px 52px;
+
+.ts-head {
+  display: grid;
+  grid-template-columns: $ts-cols;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.ts-head-name { font-size: .72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.ts-col {
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.ts-row {
+  display: grid;
+  grid-template-columns: $ts-cols;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background .12s;
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--primary-faint); }
+}
+.ts-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ts-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.ts-name-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.ts-name-th {
+  font-size: .88rem; font-weight: 600; color: var(--text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ts-name-team { font-size: .72rem; color: var(--text-muted); }
+
+.ts-val {
+  text-align: center;
+  font-weight: 800;
+  font-size: .95rem;
+  font-family: var(--font-display);
+}
+.ts-practice { color: #2e7d32; }
+.ts-absent   { color: var(--danger); }
+.ts-leave    { color: var(--warning); }
+.ts-compete  { color: var(--primary); }
+.ts-zero     { color: var(--text-muted); opacity: .35; font-weight: 600; }
+
 // ── Athlete picker ────────────────────────────────────────────────────────────
 .athlete-picker-trigger {
   display: flex;

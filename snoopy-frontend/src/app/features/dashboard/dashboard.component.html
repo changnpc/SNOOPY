@@ -288,27 +288,25 @@
         <div *ngIf="!coachTeamStatsLoading && filteredStats.length === 0" class="empty-state" style="padding:24px">
           <span class="mi">groups</span><p>{{ 'ไม่มีข้อมูล' | t }}</p>
         </div>
-        <!-- Card list — fully responsive, no horizontal scroll -->
-        <div *ngFor="let p of filteredStats; trackBy: trackByUserId" class="team-stat-row">
-          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-            <img [src]="avatarFor(p)"
-                 style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="" />
-            <span style="font-size:.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.th_name }}</span>
-          </div>
-          <div class="team-stat-nums">
-            <div class="team-stat-num" style="color:#2e7d32" [title]="'เข้าซ้อม' | t">
-              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ซ้อม' | t }}</span>{{ p.practice_days }}
-            </div>
-            <div class="team-stat-num" style="color:var(--danger)" [title]="'ขาด' | t">
-              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ขาด' | t }}</span>{{ p.absent_days }}
-            </div>
-            <div class="team-stat-num" style="color:var(--warning)" [title]="'ลา' | t">
-              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ลา' | t }}</span>{{ p.leave_days }}
-            </div>
-            <div class="team-stat-num" style="color:var(--primary)" [title]="'แข่งขัน' | t">
-              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'แข่ง' | t }}</span>{{ p.competition_count }}
+        <!-- Column header (once) -->
+        <div class="ts-head" *ngIf="!coachTeamStatsLoading && filteredStats.length">
+          <span class="ts-head-name">{{ 'นักกีฬา' | t }}</span>
+          <span class="ts-col">{{ 'ซ้อม' | t }}</span>
+          <span class="ts-col">{{ 'ขาด' | t }}</span>
+          <span class="ts-col">{{ 'ลา' | t }}</span>
+          <span class="ts-col">{{ 'แข่ง' | t }}</span>
+        </div>
+        <div *ngFor="let p of filteredStats; trackBy: trackByUserId" class="ts-row">
+          <div class="ts-name">
+            <img [src]="avatarFor(p)" class="ts-avatar" alt="" />
+            <div class="ts-name-text">
+              <span class="ts-name-th">{{ p.th_name }}</span>
             </div>
           </div>
+          <span class="ts-val ts-practice" [class.ts-zero]="!p.practice_days">{{ p.practice_days }}</span>
+          <span class="ts-val ts-absent"   [class.ts-zero]="!p.absent_days">{{ p.absent_days }}</span>
+          <span class="ts-val ts-leave"    [class.ts-zero]="!p.leave_days">{{ p.leave_days }}</span>
+          <span class="ts-val ts-compete"  [class.ts-zero]="!p.competition_count">{{ p.competition_count }}</span>
         </div>
       </div>
     </div>
@@ -438,29 +436,26 @@
         <div *ngIf="!coachTeamStatsLoading && filteredStats.length === 0" class="empty-state" style="padding:24px">
           <span class="mi">groups</span><p>{{ 'ไม่มีข้อมูล' | t }}</p>
         </div>
-        <div *ngFor="let p of filteredStats; trackBy: trackByUserId" class="team-stat-row">
-          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-            <img [src]="avatarFor(p)"
-                 style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="" />
-            <div style="min-width:0">
-              <div style="font-size:.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.th_name }}</div>
-              <div style="font-size:.72rem;color:var(--text-muted)">{{ teamNames[p.team_id] || p.team_id }}</div>
+        <!-- Column header (once) -->
+        <div class="ts-head" *ngIf="!coachTeamStatsLoading && filteredStats.length">
+          <span class="ts-head-name">{{ 'นักกีฬา' | t }}</span>
+          <span class="ts-col">{{ 'ซ้อม' | t }}</span>
+          <span class="ts-col">{{ 'ขาด' | t }}</span>
+          <span class="ts-col">{{ 'ลา' | t }}</span>
+          <span class="ts-col">{{ 'แข่ง' | t }}</span>
+        </div>
+        <div *ngFor="let p of filteredStats; trackBy: trackByUserId" class="ts-row">
+          <div class="ts-name">
+            <img [src]="avatarFor(p)" class="ts-avatar" alt="" />
+            <div class="ts-name-text">
+              <span class="ts-name-th">{{ p.th_name }}</span>
+              <span class="ts-name-team">{{ teamNames[p.team_id] || p.team_id }}</span>
             </div>
           </div>
-          <div class="team-stat-nums">
-            <div class="team-stat-num" style="color:#2e7d32" [title]="'เข้าซ้อม' | t">
-              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ซ้อม' | t }}</span>{{ p.practice_days }}
-            </div>
-            <div class="team-stat-num" style="color:var(--danger)" [title]="'ขาด' | t">
-              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ขาด' | t }}</span>{{ p.absent_days }}
-            </div>
-            <div class="team-stat-num" style="color:var(--warning)" [title]="'ลา' | t">
-              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'ลา' | t }}</span>{{ p.leave_days }}
-            </div>
-            <div class="team-stat-num" style="color:var(--primary)" [title]="'แข่งขัน' | t">
-              <span style="font-size:.65rem;display:block;color:var(--text-muted)">{{ 'แข่ง' | t }}</span>{{ p.competition_count }}
-            </div>
-          </div>
+          <span class="ts-val ts-practice" [class.ts-zero]="!p.practice_days">{{ p.practice_days }}</span>
+          <span class="ts-val ts-absent"   [class.ts-zero]="!p.absent_days">{{ p.absent_days }}</span>
+          <span class="ts-val ts-leave"    [class.ts-zero]="!p.leave_days">{{ p.leave_days }}</span>
+          <span class="ts-val ts-compete"  [class.ts-zero]="!p.competition_count">{{ p.competition_count }}</span>
         </div>
       </div>
     </div>
