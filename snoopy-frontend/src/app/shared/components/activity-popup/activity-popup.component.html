@@ -1,17 +1,16 @@
 <div class="modal-overlay activity-popup-overlay" *ngIf="show" (click)="close()">
   <div class="modal-container activity-popup" (click)="$event.stopPropagation()">
 
-    <!-- Decorative sparkles -->
-    <div class="ap-sparkles" aria-hidden="true">
-      <span class="ap-spark ap-spark-1">✦</span>
-      <span class="ap-spark ap-spark-2">✦</span>
-      <span class="ap-spark ap-spark-3">✦</span>
-      <span class="ap-spark ap-spark-4">✦</span>
-      <span class="ap-spark ap-spark-5">⭐</span>
-    </div>
-
     <!-- Hero banner -->
     <div class="activity-popup-hero">
+      <!-- Decorative sparkles (inside hero only) -->
+      <div class="ap-sparkles" aria-hidden="true">
+        <span class="ap-spark ap-spark-1">✦</span>
+        <span class="ap-spark ap-spark-2">✦</span>
+        <span class="ap-spark ap-spark-3">✦</span>
+        <span class="ap-spark ap-spark-4">✦</span>
+        <span class="ap-spark ap-spark-5">★</span>
+      </div>
       <div class="activity-popup-mascot">
         <app-mascot [size]="96" mood="cheer" [animate]="true"></app-mascot>
       </div>

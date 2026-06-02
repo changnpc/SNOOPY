@@ -1600,8 +1600,8 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   }
 }
 
-/* Sparkle decorations */
-.ap-sparkles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+/* Sparkle decorations — scoped inside hero */
+.ap-sparkles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; border-radius: inherit; }
 .ap-spark {
   position: absolute;
   font-size: .75rem;
