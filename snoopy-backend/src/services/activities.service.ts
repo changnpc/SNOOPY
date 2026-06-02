@@ -92,10 +92,20 @@ export async function createActivity(data: Partial<Activity>, createdBy: string)
   return activity;
 }
 
+// Fields a client may modify via PUT. is_archived is system-managed (cron/lazy),
+// id/created_* are stripped by repo.update — whitelist here blocks the rest.
+const EDITABLE: (keyof Activity)[] = [
+  'title', 'date_from', 'date_to', 'location', 'details',
+  'img_url', 'url', 'attachment_url', 'attachment_name',
+];
+
 export async function updateActivity(activityId: string, data: Partial<Activity>): Promise<Activity> {
+  const patch: Partial<Activity> = {};
+  for (const k of EDITABLE) if (data[k] !== undefined) (patch as any)[k] = data[k];
+
   // Get the current record before overwriting so we can detect changes.
   const before = await repo.findOrThrow(activityId);
-  const updated = await repo.update(activityId, data);
+  const updated = await repo.update(activityId, patch);
 
   // Sync any linked calendar events when date or title changed.
   const titleChanged     = data.title     && data.title     !== before.data.title;
