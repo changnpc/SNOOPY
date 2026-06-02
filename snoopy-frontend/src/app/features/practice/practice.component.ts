@@ -175,14 +175,14 @@ export class PracticeComponent extends CrudModalController<PracticeLink> {
   trackByGroupDate(_: number, g: GroupedLinks): string { return g.date; }
   trackByLinkId(_: number, l: PracticeLink): string { return l.link_id; }
 
-  // Each session index gets a distinct on-theme color (cycles if > 4)
-  private readonly SESSION_COLORS = [
-    { bg: 'linear-gradient(135deg,#2d7dd2,#5ba3e8)', btn: '#2d7dd2' }, // primary blue
-    { bg: 'linear-gradient(135deg,#2e7d32,#4caf50)', btn: '#2e7d32' }, // success green
-    { bg: 'linear-gradient(135deg,#e65100,#ff8a65)', btn: '#e65100' }, // warm orange
-    { bg: 'linear-gradient(135deg,#6a1b9a,#ab47bc)', btn: '#6a1b9a' }, // bridge purple
+  // Card suits tie to bridge theme; colors use design tokens so dark mode works.
+  private readonly SESSION_STYLES = [
+    { suit: '♠', accent: 'var(--primary)',     faint: 'var(--primary-faint)',  border: 'var(--primary)'  },
+    { suit: '♥', accent: 'var(--danger)',      faint: 'var(--danger-bg)',      border: 'var(--danger)'   },
+    { suit: '♦', accent: 'var(--accent-dark)', faint: 'var(--accent-faint)',   border: 'var(--accent)'   },
+    { suit: '♣', accent: 'var(--success)',     faint: 'var(--success-bg)',     border: 'var(--success)'  },
   ];
-  sessionColor(index: number): { bg: string; btn: string } {
-    return this.SESSION_COLORS[index % this.SESSION_COLORS.length];
+  sessionStyle(index: number) {
+    return this.SESSION_STYLES[index % this.SESSION_STYLES.length];
   }
 }

@@ -33,37 +33,60 @@
       <h3 style="font-size:.95rem;font-weight:700;color:var(--primary);margin:0">{{ (g.date | locDate:'full') }}</h3>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;padding:16px">
-      <div *ngFor="let l of g.links; let i = index; trackBy: trackByLinkId" class="card" style="padding:0;overflow:hidden;margin:0">
-        <div [style.background]="sessionColor(i).bg" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
-          <div style="color:white">
-            <div style="font-size:.72rem;font-weight:500;opacity:.82;letter-spacing:.04em;text-transform:uppercase">Session</div>
-            <div style="font-size:1.05rem;font-weight:800;line-height:1.2">{{ l.section }}</div>
+      <div *ngFor="let l of g.links; let i = index; trackBy: trackByLinkId"
+           class="card" style="padding:0;overflow:hidden;margin:0;display:flex;flex-direction:row">
+        <!-- Left accent bar -->
+        <div [style.background]="sessionStyle(i).accent" style="width:5px;flex-shrink:0"></div>
+
+        <div style="flex:1;min-width:0">
+          <!-- Card header — faint bg + suit + section name -->
+          <div [style.background]="sessionStyle(i).faint"
+               style="padding:11px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <!-- Card suit badge -->
+              <span [style.color]="sessionStyle(i).accent"
+                    style="font-size:1.4rem;line-height:1;font-weight:900;flex-shrink:0">
+                {{ sessionStyle(i).suit }}
+              </span>
+              <div>
+                <div style="font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)">Session</div>
+                <div style="font-size:1rem;font-weight:800;color:var(--text-primary);line-height:1.2">{{ l.section }}</div>
+              </div>
+            </div>
+            <div *ngIf="auth.isAdmin || auth.role==='Coach'" style="display:flex;gap:6px">
+              <button class="btn btn-sm btn-ghost" (click)="openEdit(l)"><span class="mi mi-sm">edit</span></button>
+              <button class="btn btn-sm btn-ghost" (click)="delete(l)" [disabled]="deletingId===l.link_id"><span class="mi mi-sm">delete</span></button>
+            </div>
           </div>
-          <div *ngIf="auth.isAdmin || auth.role==='Coach'" style="display:flex;gap:6px">
-            <button class="btn btn-sm" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.45)" (click)="openEdit(l)"><span class="mi mi-sm">edit</span></button>
-            <button class="btn btn-sm" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.45)" (click)="delete(l)" [disabled]="deletingId===l.link_id"><span class="mi mi-sm">delete</span></button>
-          </div>
-        </div>
-        <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
-          <div>
-            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px;font-weight:600"><span class="mi mi-sm" style="vertical-align:-3px">link</span> {{ 'ลิงก์สำหรับนักกีฬา' | t }}</div>
-            <a [href]="l.player_link | rbLink" target="_blank" rel="noopener" class="btn btn-sm"
-               [style.background]="sessionColor(i).btn" [style.border-color]="sessionColor(i).btn"
-               style="color:#fff;width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-              {{ 'เข้าร่วมห้องซ้อม' | t }}
-            </a>
-          </div>
-          <div *ngIf="(auth.isAdmin || auth.role==='Coach') && l.coach_link">
-            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px;font-weight:600"><span class="mi mi-sm" style="vertical-align:-3px">sports</span> {{ 'ลิงก์สำหรับโค้ช' | t }}</div>
-            <a [href]="l.coach_link | rbLink" target="_blank" rel="noopener" class="btn btn-ghost btn-sm"
-               style="width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-              {{ 'เข้าร่วม (โค้ช)' | t }}
-            </a>
-          </div>
-          <div *ngIf="l.note" style="font-size:.82rem;color:var(--text-secondary);background:var(--bg-muted);border-radius:6px;padding:8px 10px">
-            <span class="mi mi-sm" style="vertical-align:-3px">sticky_note_2</span> {{ l.note }}
+
+          <!-- Links -->
+          <div style="padding:14px 14px;display:flex;flex-direction:column;gap:10px">
+            <div>
+              <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:5px;font-weight:600">
+                <span class="mi mi-sm" style="vertical-align:-3px">link</span> {{ 'ลิงก์สำหรับนักกีฬา' | t }}
+              </div>
+              <a [href]="l.player_link | rbLink" target="_blank" rel="noopener"
+                 class="btn btn-sm" [style.background]="sessionStyle(i).accent"
+                 [style.border-color]="sessionStyle(i).accent"
+                 style="color:#fff;width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                {{ 'เข้าร่วมห้องซ้อม' | t }}
+              </a>
+            </div>
+            <div *ngIf="(auth.isAdmin || auth.role==='Coach') && l.coach_link">
+              <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:5px;font-weight:600">
+                <span class="mi mi-sm" style="vertical-align:-3px">sports</span> {{ 'ลิงก์สำหรับโค้ช' | t }}
+              </div>
+              <a [href]="l.coach_link | rbLink" target="_blank" rel="noopener"
+                 class="btn btn-ghost btn-sm"
+                 style="width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                {{ 'เข้าร่วม (โค้ช)' | t }}
+              </a>
+            </div>
+            <div *ngIf="l.note" style="font-size:.82rem;color:var(--text-secondary);background:var(--bg);border-radius:6px;padding:8px 10px">
+              <span class="mi mi-sm" style="vertical-align:-3px">sticky_note_2</span> {{ l.note }}
+            </div>
           </div>
         </div>
       </div>
