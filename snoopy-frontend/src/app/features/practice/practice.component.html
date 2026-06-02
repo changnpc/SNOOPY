@@ -36,6 +36,7 @@
       <span class="mi mi-sm practice-day-icon">calendar_month</span>
       <h3 class="practice-day-title">{{ (g.date | locDate:'full') }}</h3>
       <span class="practice-day-count">{{ g.links.length }}</span>
+      <app-mascot [size]="40" mood="wave" class="practice-day-mascot"></app-mascot>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;padding:16px">
       <div *ngFor="let l of g.links; let i = index; trackBy: trackByLinkId"
