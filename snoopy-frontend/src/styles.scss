@@ -1677,6 +1677,9 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 }
 .ap-item-stripe { display: none; }
 
+/* overflow:hidden clips border-left at modal's rounded bottom corners */
+.ap-list { overflow: hidden; border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
+
 .activity-popup-date-col { flex-shrink: 0; }
 .activity-popup-date-badge {
   width: 46px;
