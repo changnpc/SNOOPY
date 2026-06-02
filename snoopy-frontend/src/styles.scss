@@ -1666,26 +1666,16 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .activity-popup-item {
   display: flex;
   gap: 14px;
-  padding: 14px 20px 14px 24px;
+  padding: 14px 20px;
   border-bottom: 1px solid var(--border);
-  position: relative;
-  overflow: hidden;
+  border-left: 3px solid var(--primary);
   animation: ap-item-slide .3s ease both;
   animation-delay: calc(var(--ap-idx, 0) * .07s);
-  transition: background .15s;
-  &:hover { background: var(--primary-faint); }
+  transition: background .15s, border-left-color .15s;
+  &:hover { background: var(--primary-faint); border-left-color: var(--accent-dark); }
   &.last { border-bottom: none; }
 }
-
-/* Left accent stripe per item */
-.ap-item-stripe {
-  position: absolute;
-  left: 0; top: 8px; bottom: 8px;
-  width: 3px;
-  border-radius: 0 2px 2px 0;
-  background: linear-gradient(180deg, var(--primary), var(--accent-dark));
-  opacity: .6;
-}
+.ap-item-stripe { display: none; }
 
 .activity-popup-date-col { flex-shrink: 0; }
 .activity-popup-date-badge {
