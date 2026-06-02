@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ActivitiesService } from '../../core/services/activities.service';
 import { CrudModalController, CrudLabels } from '../../core/base/crud-modal.controller';
 import { Activity, ApiResponse } from '../../models';
+import { SelectOption } from '../../shared/components/ui-select/ui-select.component';
 
 @Component({ selector: 'app-activity', templateUrl: './activity.component.html' })
 export class ActivityComponent extends CrudModalController<Activity> {
@@ -14,14 +15,50 @@ export class ActivityComponent extends CrudModalController<Activity> {
   /** 'current' = upcoming/ongoing · 'history' = archived/past */
   tab: 'current' | 'history' = 'current';
 
-  /** Template alias for the inherited generic list. */
-  get activities(): Activity[] { return this.items; }
+  // History filter + sort state (same UX as practice history)
+  historyFilterYear  = '';
+  historyFilterMonth = '';
+  historySortAsc     = false; // default: newest first
 
   switchTab(tab: 'current' | 'history'): void {
     if (this.tab === tab) return;
     this.tab = tab;
+    this.historyFilterYear = '';
+    this.historyFilterMonth = '';
     this.load();
   }
+
+  /** Distinct years (desc) from the loaded list. */
+  get historyYearOptions(): SelectOption[] {
+    const years = new Set(this.items.map(a => a.date_from.slice(0, 4)));
+    return [...years].sort((a, b) => b.localeCompare(a)).map(y => ({ value: y, label: y }));
+  }
+
+  /** Distinct months for selected year (or all), ascending. */
+  get historyMonthOptions(): SelectOption[] {
+    const source = this.historyFilterYear
+      ? this.items.filter(a => a.date_from.startsWith(this.historyFilterYear))
+      : this.items;
+    const months = new Set(source.map(a => a.date_from.slice(5, 7)));
+    return [...months].sort().map(m => ({
+      value: m,
+      label: new Date(`2000-${m}-01`).toLocaleDateString('th-TH', { month: 'long' }),
+    }));
+  }
+
+  /** Template list — current tab raw; history tab filtered + sorted. */
+  get activities(): Activity[] {
+    if (this.tab === 'current') return this.items;
+    let filtered = this.items;
+    if (this.historyFilterYear)  filtered = filtered.filter(a => a.date_from.startsWith(this.historyFilterYear));
+    if (this.historyFilterMonth) filtered = filtered.filter(a => a.date_from.slice(5, 7) === this.historyFilterMonth);
+    return [...filtered].sort((a, b) =>
+      this.historySortAsc ? a.date_from.localeCompare(b.date_from) : b.date_from.localeCompare(a.date_from)
+    );
+  }
+
+  onYearChange(): void { this.historyFilterMonth = ''; }
+  toggleHistorySort(): void { this.historySortAsc = !this.historySortAsc; }
 
   /** True if URL is a Google Maps link → show a "Maps" button instead. */
   isMapLink(url?: string): boolean {

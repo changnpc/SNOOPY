@@ -14,6 +14,23 @@
   <button class="tab-btn" [class.active]="tab==='history'" (click)="switchTab('history')">{{ 'ประวัติย้อนหลัง' | t }}</button>
 </div>
 
+<!-- History toolbar: year + month dropdown + sort -->
+<div *ngIf="tab==='history' && !loading" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+  <div style="width:130px">
+    <app-select [(ngModel)]="historyFilterYear" (ngModelChange)="onYearChange()"
+                [options]="historyYearOptions" [placeholder]="'ทุกปี' | t"></app-select>
+  </div>
+  <div style="width:150px">
+    <app-select [(ngModel)]="historyFilterMonth"
+                [options]="historyMonthOptions" [placeholder]="'ทุกเดือน' | t"></app-select>
+  </div>
+  <span style="flex:1"></span>
+  <button class="btn btn-outline btn-sm" (click)="toggleHistorySort()" style="gap:6px;display:flex;align-items:center">
+    <span class="mi mi-sm">{{ historySortAsc ? 'arrow_upward' : 'arrow_downward' }}</span>
+    {{ (historySortAsc ? 'เก่าสุดก่อน' : 'ใหม่สุดก่อน') | t }}
+  </button>
+</div>
+
 <div *ngIf="loading" class="empty-state" style="padding:60px"><app-mascot [size]="96" mood="happy" [animate]="true"></app-mascot><p>{{ 'กำลังโหลด...' | t }}</p></div>
 
 <div class="activity-list" *ngIf="!loading">
