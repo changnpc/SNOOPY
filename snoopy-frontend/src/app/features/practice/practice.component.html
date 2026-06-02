@@ -38,7 +38,7 @@
       <span class="practice-day-count">{{ g.links.length }}</span>
       <app-mascot [size]="40" mood="wave" class="practice-day-mascot"></app-mascot>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;padding:16px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;padding:14px">
       <div *ngFor="let l of g.links; let i = index; trackBy: trackByLinkId"
            class="card" style="padding:0;overflow:hidden;margin:0;display:flex;flex-direction:row">
         <!-- Left accent bar -->
@@ -65,32 +65,23 @@
             </div>
           </div>
 
-          <!-- Links -->
-          <div style="padding:14px 14px;display:flex;flex-direction:column;gap:10px">
-            <div>
-              <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:5px;font-weight:600">
-                <span class="mi mi-sm" style="vertical-align:-3px">link</span> {{ 'ลิงก์สำหรับนักกีฬา' | t }}
-              </div>
+          <!-- Links — Player + Coach side by side, compact -->
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:8px">
               <a [href]="l.player_link | rbLink" target="_blank" rel="noopener"
                  class="btn btn-sm" [style.background]="sessionStyle(i).accent"
                  [style.border-color]="sessionStyle(i).accent"
-                 style="color:#fff;width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-                {{ 'เข้าร่วมห้องซ้อม' | t }}
+                 style="color:#fff;flex:1;justify-content:center;display:flex;align-items:center;gap:5px;text-decoration:none">
+                <span class="mi mi-sm">person</span> Player
               </a>
-            </div>
-            <div *ngIf="(auth.isAdmin || auth.role==='Coach') && l.coach_link">
-              <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:5px;font-weight:600">
-                <span class="mi mi-sm" style="vertical-align:-3px">sports</span> {{ 'ลิงก์สำหรับโค้ช' | t }}
-              </div>
-              <a [href]="l.coach_link | rbLink" target="_blank" rel="noopener"
+              <a *ngIf="(auth.isAdmin || auth.role==='Coach') && l.coach_link"
+                 [href]="l.coach_link | rbLink" target="_blank" rel="noopener"
                  class="btn btn-ghost btn-sm"
-                 style="width:100%;justify-content:center;display:flex;gap:6px;text-decoration:none">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-                {{ 'เข้าร่วม (โค้ช)' | t }}
+                 style="flex:1;justify-content:center;display:flex;align-items:center;gap:5px;text-decoration:none">
+                <span class="mi mi-sm">sports</span> Coach
               </a>
             </div>
-            <div *ngIf="l.note" style="font-size:.82rem;color:var(--text-secondary);background:var(--bg);border-radius:6px;padding:8px 10px">
+            <div *ngIf="l.note" style="font-size:.8rem;color:var(--text-secondary);background:var(--bg);border-radius:6px;padding:7px 9px">
               <span class="mi mi-sm" style="vertical-align:-3px">sticky_note_2</span> {{ l.note }}
             </div>
           </div>
