@@ -1,7 +1,10 @@
 <div class="page-header">
-  <div>
-    <h2>{{ 'ลิงก์ซ้อมไพ่บริดจ์' | t }}</h2>
-    <p>{{ 'ลิงก์เข้าร่วมการซ้อมออนไลน์' | t }}</p>
+  <div class="page-header-titlewrap">
+    <app-mascot [size]="54" mood="happy" [animate]="true" class="page-header-mascot"></app-mascot>
+    <div>
+      <h2>{{ 'ลิงก์ซ้อมไพ่บริดจ์' | t }}</h2>
+      <p>{{ 'ลิงก์เข้าร่วมการซ้อมออนไลน์' | t }}</p>
+    </div>
   </div>
   <div class="page-header-actions">
     <button *ngIf="auth.isAdmin || auth.role === 'Coach'" class="btn btn-primary" (click)="openCreate()">
@@ -27,10 +30,12 @@
     <div class="empty-state-sub" *ngIf="auth.isAdmin || auth.role==='Coach'">{{ 'กดปุ่ม "เพิ่มลิงก์ซ้อม" เพื่อเริ่มต้น' | t }}</div>
   </div>
 
-  <div *ngFor="let g of activeGroups; trackBy: trackByGroupDate" style="margin-bottom:28px;background:var(--surface);border:var(--ink-border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
-    <div style="background:var(--primary-faint);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:10px">
-      <span class="mi mi-sm" style="color:var(--primary)">calendar_month</span>
-      <h3 style="font-size:.95rem;font-weight:700;color:var(--primary);margin:0">{{ (g.date | locDate:'full') }}</h3>
+  <div *ngFor="let g of activeGroups; trackBy: trackByGroupDate" class="practice-day-group" style="margin-bottom:28px;background:var(--surface);border:var(--ink-border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+    <div class="practice-day-header">
+      <span class="practice-day-suits" aria-hidden="true">♠♥♦♣</span>
+      <span class="mi mi-sm practice-day-icon">calendar_month</span>
+      <h3 class="practice-day-title">{{ (g.date | locDate:'full') }}</h3>
+      <span class="practice-day-count">{{ g.links.length }}</span>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;padding:16px">
       <div *ngFor="let l of g.links; let i = index; trackBy: trackByLinkId"
