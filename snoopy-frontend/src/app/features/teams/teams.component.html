@@ -1,5 +1,8 @@
 <div class="page-header">
-  <div><h2>{{ 'จัดการทีม' | t }}</h2><p>{{ langSvc.lang==='en' ? 'Total '+teams.length+' teams' : 'ทีมทั้งหมด '+teams.length+' ทีม' }}</p></div>
+  <div class="page-header-titlewrap">
+    <app-mascot [size]="54" mood="happy" [animate]="true" class="page-header-mascot"></app-mascot>
+    <div><h2>{{ 'จัดการทีม' | t }}</h2><p>{{ langSvc.lang==='en' ? 'Total '+teams.length+' teams' : 'ทีมทั้งหมด '+teams.length+' ทีม' }}</p></div>
+  </div>
   <div class="page-header-actions">
     <button *ngIf="auth.isAdmin" class="btn btn-primary" (click)="openCreate()">
       <span class="mi mi-sm">add</span>

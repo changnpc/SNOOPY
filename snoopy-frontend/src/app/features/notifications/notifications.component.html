@@ -1,8 +1,11 @@
 <div class="page-header">
-  <div>
-    <h2>{{ 'การแจ้งเตือน' | t }}</h2>
-    <p *ngIf="unreadCount > 0">{{ 'ยังไม่ได้อ่าน' | t }} {{ unreadCount }} {{ 'รายการ' | t }}</p>
-    <p *ngIf="unreadCount === 0">{{ 'อ่านทั้งหมดแล้ว' | t }}</p>
+  <div class="page-header-titlewrap">
+    <app-mascot [size]="54" mood="wave" [animate]="true" class="page-header-mascot"></app-mascot>
+    <div>
+      <h2>{{ 'การแจ้งเตือน' | t }}</h2>
+      <p *ngIf="unreadCount > 0">{{ 'ยังไม่ได้อ่าน' | t }} {{ unreadCount }} {{ 'รายการ' | t }}</p>
+      <p *ngIf="unreadCount === 0">{{ 'อ่านทั้งหมดแล้ว' | t }}</p>
+    </div>
   </div>
   <div class="page-header-actions">
     <button class="btn btn-ghost" (click)="markAll()" [disabled]="markingAll || unreadCount===0">

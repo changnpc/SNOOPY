@@ -1,10 +1,13 @@
 <div class="page-content">
   <div class="page-header">
-    <div>
-      <h1>{{ 'บั๊ดดี้ วิ่งซิ่ง' | t }}</h1>
-      <p class="page-subtitle">
-        {{ (mode === 'jump' ? 'กด Space / แตะ เพื่อกระโดดข้ามสิ่งกีดขวาง' : 'ลาก / กดลูกศรซ้าย-ขวา เพื่อหลบสิ่งกีดขวาง') | t }}
-      </p>
+    <div class="page-header-titlewrap">
+      <app-mascot [size]="54" mood="cheer" [animate]="true" class="page-header-mascot"></app-mascot>
+      <div>
+        <h1>{{ 'บั๊ดดี้ วิ่งซิ่ง' | t }}</h1>
+        <p class="page-subtitle">
+          {{ (mode === 'jump' ? 'กด Space / แตะ เพื่อกระโดดข้ามสิ่งกีดขวาง' : 'ลาก / กดลูกศรซ้าย-ขวา เพื่อหลบสิ่งกีดขวาง') | t }}
+        </p>
+      </div>
     </div>
   </div>
 

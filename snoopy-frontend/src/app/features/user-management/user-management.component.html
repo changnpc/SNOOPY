@@ -1,7 +1,10 @@
 <div class="page-header">
-  <div>
-    <h2>{{ 'จัดการผู้ใช้' | t }}</h2>
-    <p>{{ 'จัดการบัญชีผู้ใช้และสิทธิ์การเข้าถึง' | t }}</p>
+  <div class="page-header-titlewrap">
+    <app-mascot [size]="54" mood="wave" [animate]="true" class="page-header-mascot"></app-mascot>
+    <div>
+      <h2>{{ 'จัดการผู้ใช้' | t }}</h2>
+      <p>{{ 'จัดการบัญชีผู้ใช้และสิทธิ์การเข้าถึง' | t }}</p>
+    </div>
   </div>
   <div class="page-header-actions">
     <button *ngIf="tab==='users'" class="btn btn-primary" (click)="openCreate()">

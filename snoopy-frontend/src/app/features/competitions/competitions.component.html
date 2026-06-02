@@ -1,6 +1,9 @@
 <div class="page-content">
   <div class="page-header">
-    <div><h1>{{ 'ประวัติการแข่งขัน' | t }}</h1></div>
+    <div class="page-header-titlewrap">
+      <app-mascot [size]="54" mood="cheer" [animate]="true" class="page-header-mascot"></app-mascot>
+      <div><h1>{{ 'ประวัติการแข่งขัน' | t }}</h1></div>
+    </div>
     <div class="page-header-actions" *ngIf="auth.isAdmin || auth.isPlayer">
       <button class="btn btn-primary" (click)="openModal()">
         <span class="mi mi-sm">add</span>

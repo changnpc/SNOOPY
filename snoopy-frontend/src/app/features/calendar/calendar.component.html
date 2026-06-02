@@ -1,5 +1,8 @@
 <div class="page-header">
-  <div><h2>{{ 'ปฏิทินกิจกรรม' | t }}</h2><p>{{ 'ตารางการซ้อมและกิจกรรม' | t }}</p></div>
+  <div class="page-header-titlewrap">
+    <app-mascot [size]="54" mood="happy" [animate]="true" class="page-header-mascot"></app-mascot>
+    <div><h2>{{ 'ปฏิทินกิจกรรม' | t }}</h2><p>{{ 'ตารางการซ้อมและกิจกรรม' | t }}</p></div>
+  </div>
   <div class="page-header-actions">
     <button *ngIf="auth.isAdmin||auth.isCoach" class="btn btn-primary" (click)="openCreate()"><span class="mi mi-sm">add</span> {{ 'เพิ่มกิจกรรม' | t }}</button>
   </div>
