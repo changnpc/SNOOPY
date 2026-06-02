@@ -10,7 +10,7 @@ export interface Activity {
   location: string; details: string; img_url: string;
   url: string;
   attachment_url: string; attachment_name: string;
-  is_archive: string;
+  is_archived: string;
   created_by: string; created_at: string; updated_at: string;
 }
 
@@ -18,14 +18,14 @@ const repo = new SheetRepository<Activity>(SHEETS.ACTIVITIES, 'activity_id', 'AC
 
 /**
  * Get activities — current (upcoming/ongoing) or archived (past).
- * "Archived" = is_archive === 'TRUE' OR date_to is past.
+ * "Archived" = is_archived === 'TRUE' OR date_to is past.
  * Lazy-flushes stale rows to the Sheet (covers skipped cron on cold-start).
  */
 export async function getActivities(archived = false): Promise<Activity[]> {
   const all = (await repo.findAll()).filter(a => a.title !== '[DELETED]');
   const today = todayStr();
 
-  const stale = all.filter(a => a.is_archive !== 'TRUE' && a.date_to < today);
+  const stale = all.filter(a => a.is_archived !== 'TRUE' && a.date_to < today);
   if (stale.length > 0) {
     archiveExpiredActivities().catch(err =>
       console.warn('[activities] lazy archive failed:', err)
@@ -33,7 +33,7 @@ export async function getActivities(archived = false): Promise<Activity[]> {
   }
 
   const filtered = all.filter(a => {
-    const isArchived = a.is_archive === 'TRUE' || a.date_to < today;
+    const isArchived = a.is_archived === 'TRUE' || a.date_to < today;
     return isArchived === archived;
   });
 
@@ -52,8 +52,8 @@ export async function archiveExpiredActivities(): Promise<number> {
 
   for (let i = 0; i < all.length; i++) {
     const a = all[i];
-    if (a.title !== '[DELETED]' && a.date_to < today && a.is_archive !== 'TRUE') {
-      const updated = { ...a, is_archive: 'TRUE', updated_at: nowStr() };
+    if (a.title !== '[DELETED]' && a.date_to < today && a.is_archived !== 'TRUE') {
+      const updated = { ...a, is_archived: 'TRUE', updated_at: nowStr() };
       const row = headers.map(h => String((updated as any)[h] ?? ''));
       await updateRow(SHEETS.ACTIVITIES, i + 2, row); // +2 for header row
       count++;
@@ -75,7 +75,7 @@ export async function createActivity(data: Partial<Activity>, createdBy: string)
     url:             data.url ?? '',
     attachment_url:  data.attachment_url ?? '',
     attachment_name: data.attachment_name ?? '',
-    is_archive:      'FALSE',
+    is_archived:      'FALSE',
     created_by:      createdBy,
     created_at:  nowStr(),
     updated_at:  nowStr(),
