@@ -1555,6 +1555,75 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 ══════════════════════════════════════════════════════════ */
 
 /* ── Modal ───────────────────────────────────────────────── */
+// ── Activity Daily Popup ──────────────────────────────────────────────────────
+.activity-popup {
+  max-width: 520px;
+  width: 100%;
+}
+.activity-popup-hero {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 20px 24px 8px;
+}
+.activity-popup-mascot { flex-shrink: 0; }
+.activity-popup-speech {
+  position: relative;
+  background: var(--primary-faint);
+  border: 1.5px solid var(--primary);
+  border-radius: 16px 16px 16px 4px;
+  padding: 10px 14px;
+  flex: 1;
+  &::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    bottom: 10px;
+    border: 6px solid transparent;
+    border-right-color: var(--primary);
+  }
+  &::after {
+    content: '';
+    position: absolute;
+    left: -7px;
+    bottom: 11px;
+    border: 5px solid transparent;
+    border-right-color: var(--primary-faint);
+  }
+}
+.activity-popup-speech-text {
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  font-family: var(--font-display);
+}
+.activity-popup-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  &.last { border-bottom: none; }
+}
+.activity-popup-date-col { flex-shrink: 0; }
+.activity-popup-date-badge {
+  width: 44px;
+  background: var(--primary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 6px;
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.activity-popup-date-day   { font-size: 1.3rem; font-weight: 800; line-height: 1; }
+.activity-popup-date-month { font-size: .65rem; font-weight: 600; text-transform: uppercase; opacity: .9; margin-top: 2px; }
+.activity-popup-content    { flex: 1; min-width: 0; }
+.activity-popup-title      { font-size: .95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.activity-popup-meta       { font-size: .78rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin-top: 3px; }
+.activity-popup-details    { font-size: .82rem; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; }
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
 .modal-overlay {
   position: fixed;
   inset: 0;

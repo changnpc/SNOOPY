@@ -1,0 +1,62 @@
+<div class="modal-overlay activity-popup-overlay" *ngIf="show" (click)="close()">
+  <div class="modal-container activity-popup" (click)="$event.stopPropagation()">
+
+    <!-- Mascot header -->
+    <div class="activity-popup-hero">
+      <div class="activity-popup-mascot">
+        <app-mascot [size]="88" mood="cheer" [animate]="true"></app-mascot>
+      </div>
+      <div class="activity-popup-speech">
+        <span class="activity-popup-speech-text">กิจกรรมดีๆ รอทุกคนอยู่นะจ๊ะ 🎉</span>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="modal-header" style="border-top:1px solid var(--border);padding-top:16px">
+      <div class="modal-title" style="display:flex;align-items:center;gap:8px">
+        <span class="mi mi-sm" style="color:var(--accent-dark)">campaign</span>
+        {{ 'กิจกรรมที่กำลังจะมาถึง' | t }}
+        <span class="badge badge-accent" style="font-size:.72rem">{{ activities.length }}</span>
+      </div>
+      <button class="modal-close" (click)="close()"><span class="mi">close</span></button>
+    </div>
+
+    <!-- Activity list -->
+    <div class="modal-body" style="padding:0;max-height:55vh;overflow-y:auto">
+      <div *ngFor="let a of activities; let last = last"
+           class="activity-popup-item" [class.last]="last">
+        <!-- Date badge -->
+        <div class="activity-popup-date-col">
+          <div class="activity-popup-date-badge">
+            <span class="activity-popup-date-day">{{ a.date_from | date:'d' }}</span>
+            <span class="activity-popup-date-month">{{ a.date_from | date:'MMM' }}</span>
+          </div>
+        </div>
+        <!-- Content -->
+        <div class="activity-popup-content">
+          <div class="activity-popup-title">{{ a.title }}</div>
+          <div class="activity-popup-meta" *ngIf="a.date_from !== a.date_to">
+            <span class="mi mi-sm">date_range</span>
+            {{ a.date_from | date:'d MMM' }} – {{ a.date_to | date:'d MMM yyyy' }}
+          </div>
+          <div class="activity-popup-meta" *ngIf="a.location">
+            <span class="mi mi-sm">location_on</span> {{ a.location }}
+          </div>
+          <div class="activity-popup-details" *ngIf="a.details">{{ a.details }}</div>
+          <a *ngIf="a.url" [href]="a.url" target="_blank" rel="noopener"
+             class="btn btn-outline btn-sm" style="margin-top:8px;gap:5px;text-decoration:none;display:inline-flex">
+            <span class="mi mi-sm">open_in_new</span> {{ 'เปิดลิงก์' | t }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="close()">
+        <span class="mi mi-sm">check</span> {{ 'รับทราบแล้ว' | t }}
+      </button>
+    </div>
+
+  </div>
+</div>

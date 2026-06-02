@@ -15,6 +15,7 @@ import { RealbridgeLinkPipe } from './pipes/realbridge-link.pipe';
 import { AvatarPipe, RoleBadgePipe, LocalizedDatePipe, TeamNamePipe } from './pipes/display.pipes';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { MascotComponent } from './components/mascot/mascot.component';
+import { ActivityPopupComponent } from './components/activity-popup/activity-popup.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { MascotComponent } from './components/mascot/mascot.component';
     TeamNamePipe,
     ConfirmDialogComponent,
     MascotComponent,
+    ActivityPopupComponent,
   ],
   imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
   exports: [
@@ -54,6 +56,7 @@ import { MascotComponent } from './components/mascot/mascot.component';
     TeamNamePipe,
     ConfirmDialogComponent,
     MascotComponent,
+    ActivityPopupComponent,
   ],
 })
 export class SharedModule {}
