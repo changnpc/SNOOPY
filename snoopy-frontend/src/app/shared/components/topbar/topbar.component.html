@@ -15,6 +15,13 @@
       <span class="mi" [style.color]="(theme.theme$ | async) === 'dark' ? '#ffd95e' : '#4a90d9'">{{ (theme.theme$ | async) === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
     </button>
 
+    <!-- Activity bell -->
+    <button class="btn-icon topbar-activity-btn" (click)="openActivityPopup()"
+            [title]="'กิจกรรมที่กำลังจะมาถึง' | t">
+      <span class="mi" style="color:var(--accent-dark)">campaign</span>
+      <span *ngIf="activityCount > 0" class="topbar-activity-count">{{ activityCount > 9 ? '9+' : activityCount }}</span>
+    </button>
+
     <div class="notif-wrap" (clickOutside)="showNotifPanel=false">
       <button class="btn-icon notif-btn" (click)="togglePanel()">
         <span class="mi">notifications</span>

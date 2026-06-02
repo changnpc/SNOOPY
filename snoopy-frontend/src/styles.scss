@@ -1556,72 +1556,196 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 
 /* ── Modal ───────────────────────────────────────────────── */
 // ── Activity Daily Popup ──────────────────────────────────────────────────────
+@keyframes ap-pop-in {
+  0%   { opacity: 0; transform: scale(.88) translateY(24px); }
+  70%  { opacity: 1; transform: scale(1.02) translateY(-4px); }
+  100% { transform: scale(1) translateY(0); }
+}
+@keyframes ap-spark-float {
+  0%,100% { transform: translateY(0) rotate(0deg); opacity: .8; }
+  50%      { transform: translateY(-10px) rotate(20deg); opacity: 1; }
+}
+@keyframes ap-item-slide {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.activity-popup-overlay { z-index: 900 !important; }
+
 .activity-popup {
   max-width: 520px;
-  width: 100%;
+  width: calc(100vw - 32px);
+  animation: ap-pop-in .38s cubic-bezier(.34,1.56,.64,1) both;
+  overflow: hidden;
+  position: relative;
 }
+
+/* Hero gradient banner */
 .activity-popup-hero {
   display: flex;
   align-items: flex-end;
-  gap: 14px;
-  padding: 20px 24px 8px;
+  gap: 16px;
+  padding: 22px 24px 14px;
+  background: linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 70%, var(--accent-dark)) 100%);
+  position: relative;
+  overflow: hidden;
+  /* soft dot texture */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(255,255,255,.12) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,.08) 0%, transparent 40%);
+    pointer-events: none;
+  }
 }
-.activity-popup-mascot { flex-shrink: 0; }
+
+/* Sparkle decorations */
+.ap-sparkles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.ap-spark {
+  position: absolute;
+  font-size: .75rem;
+  color: rgba(255,255,255,.7);
+  animation: ap-spark-float 3s ease-in-out infinite;
+}
+.ap-spark-1 { top: 16%; left: 12%;  animation-delay: 0s;    font-size: .6rem; }
+.ap-spark-2 { top: 40%; left: 60%;  animation-delay: .6s;   font-size: .9rem; }
+.ap-spark-3 { top: 65%; left: 30%;  animation-delay: 1.2s;  font-size: .55rem; }
+.ap-spark-4 { top: 20%; left: 80%;  animation-delay: 1.8s;  font-size: .7rem; }
+.ap-spark-5 { top: 75%; left: 75%;  animation-delay: .9s;   font-size: 1rem; }
+
+.activity-popup-mascot { flex-shrink: 0; position: relative; z-index: 1; }
+
 .activity-popup-speech {
   position: relative;
-  background: var(--primary-faint);
-  border: 1.5px solid var(--primary);
+  z-index: 1;
+  background: rgba(255,255,255,.95);
   border-radius: 16px 16px 16px 4px;
-  padding: 10px 14px;
+  padding: 12px 16px;
   flex: 1;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
   &::before {
     content: '';
     position: absolute;
     left: -10px;
-    bottom: 10px;
-    border: 6px solid transparent;
-    border-right-color: var(--primary);
-  }
-  &::after {
-    content: '';
-    position: absolute;
-    left: -7px;
-    bottom: 11px;
-    border: 5px solid transparent;
-    border-right-color: var(--primary-faint);
+    bottom: 12px;
+    border: 7px solid transparent;
+    border-right-color: rgba(255,255,255,.95);
   }
 }
+
 .activity-popup-speech-text {
-  font-size: .88rem;
-  font-weight: 700;
+  font-size: .9rem;
+  font-weight: 800;
   color: var(--primary-dark);
   font-family: var(--font-display);
+  line-height: 1.4;
 }
+.ap-speech-sub {
+  font-size: .75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.ap-modal-header {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.ap-count-badge {
+  font-size: .7rem;
+  min-width: 20px;
+  text-align: center;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* List */
+.ap-list { padding: 0; }
+
 .activity-popup-item {
   display: flex;
   gap: 14px;
   padding: 14px 20px;
   border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  animation: ap-item-slide .3s ease both;
+  animation-delay: calc(var(--ap-idx, 0) * .07s);
+  transition: background .15s;
+  &:hover { background: var(--primary-faint); }
   &.last { border-bottom: none; }
 }
+
+/* Left accent stripe per item */
+.ap-item-stripe {
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(180deg, var(--primary), var(--accent-dark));
+  opacity: .6;
+}
+
 .activity-popup-date-col { flex-shrink: 0; }
 .activity-popup-date-badge {
-  width: 44px;
-  background: var(--primary);
+  width: 46px;
+  background: linear-gradient(160deg, var(--primary), var(--primary-dark, var(--primary)));
   border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 4px 6px;
+  padding: 5px 6px;
   color: #fff;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 3px 10px rgba(0,0,0,.2);
 }
-.activity-popup-date-day   { font-size: 1.3rem; font-weight: 800; line-height: 1; }
-.activity-popup-date-month { font-size: .65rem; font-weight: 600; text-transform: uppercase; opacity: .9; margin-top: 2px; }
+.activity-popup-date-day   { font-size: 1.35rem; font-weight: 800; line-height: 1; font-family: var(--font-display); }
+.activity-popup-date-month { font-size: .63rem; font-weight: 600; text-transform: uppercase; opacity: .9; margin-top: 2px; }
 .activity-popup-content    { flex: 1; min-width: 0; }
 .activity-popup-title      { font-size: .95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
 .activity-popup-meta       { font-size: .78rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin-top: 3px; }
 .activity-popup-details    { font-size: .82rem; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; }
+
+.ap-link-btn {
+  margin-top: 8px;
+  gap: 5px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ap-footer {
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.ap-ack-btn {
+  min-width: 140px;
+  font-weight: 700;
+}
+
+/* Topbar activity button */
+.topbar-activity-btn {
+  position: relative;
+}
+.topbar-activity-count {
+  position: absolute;
+  top: 2px; right: 2px;
+  min-width: 16px;
+  height: 16px;
+  background: var(--accent-dark);
+  color: #fff;
+  border-radius: 8px;
+  font-size: .6rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+  pointer-events: none;
+  animation: pulse 2.5s ease-in-out infinite;
+}
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
 .modal-overlay {

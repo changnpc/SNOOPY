@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ActivityPopupService } from '../../../core/services/activity-popup.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { Notification, ApiResponse } from '../../../models';
@@ -17,10 +18,12 @@ export class TopbarComponent implements OnInit {
   showNotifPanel = false;
   notifications: Notification[] = [];
   unreadCount = 0;
+  activityCount = 0;
 
   constructor(
     public auth: AuthService,
     private notifSvc: NotificationService,
+    public activityPopupSvc: ActivityPopupService,
     public theme: ThemeService,
     public langSvc: LanguageService,
     private router: Router
@@ -31,7 +34,12 @@ export class TopbarComponent implements OnInit {
 
   ngOnInit() {
     this.notifSvc.unreadCount$.subscribe(c => this.unreadCount = c);
+    this.activityPopupSvc.activityCount$.subscribe(c => this.activityCount = c);
     this.loadNotifications();
+  }
+
+  openActivityPopup(): void {
+    this.activityPopupSvc.open();
   }
 
   loadNotifications() {
