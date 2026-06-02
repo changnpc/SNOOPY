@@ -73,6 +73,28 @@
 
 <!-- ══ PAST HISTORY — compact list view ══ -->
 <div *ngIf="tab==='history'">
+
+  <!-- Toolbar: period filter chips + sort button -->
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    <!-- All chip -->
+    <button class="team-chip" [class.active]="!historyFilterYear" (click)="clearHistoryFilter()">
+      {{ 'ทั้งหมด' | t }}
+    </button>
+    <!-- Year-month chips -->
+    <button *ngFor="let ym of historyYearMonths"
+            class="team-chip" [class.active]="historyFilterYear===ym.year && historyFilterMonth===ym.month"
+            (click)="selectHistoryPeriod(ym.year, ym.month)">
+      {{ ym.label }}
+    </button>
+    <!-- Spacer -->
+    <span style="flex:1"></span>
+    <!-- Sort toggle -->
+    <button class="btn btn-outline btn-sm" (click)="toggleHistorySort()" style="gap:6px;display:flex;align-items:center">
+      <span class="mi mi-sm">{{ historySortAsc ? 'arrow_upward' : 'arrow_downward' }}</span>
+      {{ (historySortAsc ? 'เก่าสุดก่อน' : 'ใหม่สุดก่อน') | t }}
+    </button>
+  </div>
+
   <div *ngIf="activeGroups.length === 0" class="empty-state" style="padding:60px 24px">
     <app-mascot [size]="100" mood="sleep"></app-mascot>
     <div class="empty-state-title">{{ 'ยังไม่มีประวัติ' | t }}</div>
@@ -87,28 +109,33 @@
       </div>
       <!-- Link rows -->
       <div *ngFor="let l of g.links; trackBy: trackByLinkId"
-           style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border)">
+           style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)">
         <!-- Session badge -->
         <span style="font-size:.72rem;font-weight:700;color:#fff;background:var(--text-muted);border-radius:4px;padding:2px 7px;flex-shrink:0;white-space:nowrap">
           {{ l.section }}
         </span>
         <!-- Team -->
-        <span *ngIf="l.team_id" style="font-size:.8rem;color:var(--text-muted);flex-shrink:0">{{ (l.team_id | teamName) }}</span>
-        <span *ngIf="!l.team_id" style="font-size:.8rem;color:var(--text-muted);flex-shrink:0">{{ 'ทุกทีม' | t }}</span>
-        <!-- Player link -->
-        <a [href]="l.player_link | rbLink" target="_blank" rel="noopener"
-           style="font-size:.82rem;color:var(--primary);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"
-           title="{{ l.player_link }}">
-          <span class="mi mi-sm" style="vertical-align:-3px;font-size:.9rem">link</span>
-          {{ 'ลิงก์นักกีฬา' | t }}
-        </a>
-        <!-- Coach link -->
-        <a *ngIf="(auth.isAdmin || auth.role==='Coach') && l.coach_link"
-           [href]="l.coach_link | rbLink" target="_blank" rel="noopener"
-           style="font-size:.82rem;color:var(--text-secondary);text-decoration:none;flex-shrink:0">
-          <span class="mi mi-sm" style="vertical-align:-3px;font-size:.9rem">sports</span>
-          {{ 'โค้ช' | t }}
-        </a>
+        <span style="font-size:.8rem;color:var(--text-muted);flex-shrink:0;min-width:60px">
+          {{ l.team_id ? (l.team_id | teamName) : ('ทุกทีม' | t) }}
+        </span>
+        <!-- Spacer -->
+        <span style="flex:1"></span>
+        <!-- Link icons — player + coach grouped together -->
+        <div style="display:flex;align-items:center;gap:4px">
+          <!-- Player icon link -->
+          <a [href]="l.player_link | rbLink" target="_blank" rel="noopener"
+             class="btn btn-sm btn-outline" style="padding:5px 8px;gap:4px;text-decoration:none"
+             [title]="'ลิงก์นักกีฬา' | t">
+            <span class="mi mi-sm">person</span>
+          </a>
+          <!-- Coach icon link -->
+          <a *ngIf="(auth.isAdmin || auth.role==='Coach') && l.coach_link"
+             [href]="l.coach_link | rbLink" target="_blank" rel="noopener"
+             class="btn btn-sm btn-ghost" style="padding:5px 8px;gap:4px;text-decoration:none"
+             [title]="'ลิงก์โค้ช' | t">
+            <span class="mi mi-sm">sports</span>
+          </a>
+        </div>
         <!-- Delete (admin only) -->
         <button *ngIf="auth.isAdmin" class="btn btn-sm btn-ghost" style="flex-shrink:0;padding:4px 8px"
                 (click)="delete(l)" [disabled]="deletingId===l.link_id">

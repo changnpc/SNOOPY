@@ -25,12 +25,54 @@ export class PracticeComponent extends CrudModalController<PracticeLink> {
   tab: 'current' | 'history' = 'current';
   deletingId: string | null = null;
 
+  // History filter + sort state
+  historyFilterYear  = '';
+  historyFilterMonth = '';
+  historySortAsc     = false; // default: newest first
+
   get teamOptions(): SelectOption[] {
     return this.teams.map(t => ({ value: t.team_id, label: t.team_name }));
   }
-  get activeGroups(): GroupedLinks[] {
-    return this.tab === 'current' ? this.groups : this.historyGroups;
+
+  /** Distinct year-month combos available in history, newest first. */
+  get historyYearMonths(): { year: string; month: string; label: string }[] {
+    const seen = new Set<string>();
+    const out: { year: string; month: string; label: string }[] = [];
+    for (const g of [...this.historyGroups].sort((a, b) => b.date.localeCompare(a.date))) {
+      const [y, m] = g.date.split('-');
+      const key = `${y}-${m}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        const d = new Date(`${y}-${m}-01`);
+        const label = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'long' });
+        out.push({ year: y, month: m, label });
+      }
+    }
+    return out;
   }
+
+  get activeGroups(): GroupedLinks[] {
+    if (this.tab === 'current') return this.groups;
+    let filtered = this.historyGroups;
+    if (this.historyFilterYear && this.historyFilterMonth) {
+      filtered = filtered.filter(g =>
+        g.date.startsWith(`${this.historyFilterYear}-${this.historyFilterMonth}`)
+      );
+    }
+    return [...filtered].sort((a, b) =>
+      this.historySortAsc ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date)
+    );
+  }
+
+  selectHistoryPeriod(year: string, month: string): void {
+    this.historyFilterYear  = year;
+    this.historyFilterMonth = month;
+  }
+  clearHistoryFilter(): void {
+    this.historyFilterYear  = '';
+    this.historyFilterMonth = '';
+  }
+  toggleHistorySort(): void { this.historySortAsc = !this.historySortAsc; }
 
   constructor(
     public auth: AuthService,
