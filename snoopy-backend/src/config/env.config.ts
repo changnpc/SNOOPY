@@ -69,7 +69,9 @@ export const env = {
   rateLimit: {
     windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] ?? '60000', 10),
     max:      parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] ?? '300', 10),
-    authMax:  parseInt(process.env['AUTH_RATE_LIMIT_MAX'] ?? '20', 10),
+    // Auth limit: strict in prod (20/min), relaxed in dev (200/min) so
+    // repeated login tests during development don't hit 429.
+    authMax:  parseInt(process.env['AUTH_RATE_LIMIT_MAX'] ?? (isProd ? '20' : '200'), 10),
   },
   // API docs are OFF by default; opt-in with ENABLE_API_DOCS=true.
   enableApiDocs: process.env['ENABLE_API_DOCS'] === 'true',
