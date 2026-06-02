@@ -379,4 +379,10 @@ export const EN: Record<string, string> = {
   'ไม่มีสิทธิ์ดำเนินการ': 'You do not have permission',
   'ไม่พบข้อมูลที่ต้องการ': 'Requested data not found',
   'เกิดข้อผิดพลาดของระบบ': 'A system error occurred',
+  // ── Hardcode cleanup (v1.3.x) ──
+  'เบอร์โทรศัพท์': 'Phone number',
+  'ทีมย่อย:': 'Sub-team:',
+  'เซสชัน': 'Session',
+  'ชื่อเซสชัน': 'Session name',
+  'กิจกรรมดีๆ รอทุกคนอยู่นะจ๊ะ 🎉': 'Fun activities are waiting for everyone! 🎉',
 };

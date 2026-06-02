@@ -15,8 +15,8 @@
         <app-mascot [size]="96" mood="cheer" [animate]="true"></app-mascot>
       </div>
       <div class="activity-popup-speech">
-        <div class="activity-popup-speech-text">กิจกรรมดีๆ รอทุกคนอยู่นะจ๊ะ 🎉</div>
-        <div class="ap-speech-sub">มี {{ activities.length }} กิจกรรมที่กำลังจะมาถึง</div>
+        <div class="activity-popup-speech-text">{{ 'กิจกรรมดีๆ รอทุกคนอยู่นะจ๊ะ 🎉' | t }}</div>
+        <div class="ap-speech-sub">{{ activities.length }} {{ 'กิจกรรมที่กำลังจะมาถึง' | t }}</div>
       </div>
     </div>
 

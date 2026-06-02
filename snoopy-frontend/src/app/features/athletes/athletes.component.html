@@ -17,7 +17,7 @@
 <!-- Team Filter Buttons -->
 <div class="athletes-team-filter">
   <button class="athletes-team-btn" [class.active]="teamFilter === ''" (click)="selectTeam('')">
-    <span class="athletes-team-btn-name">ทุกทีม</span>
+    <span class="athletes-team-btn-name">{{ 'ทุกทีม' | t }}</span>
     <span class="athletes-team-btn-count">{{ users.length }}</span>
   </button>
   <button *ngFor="let t of teams; trackBy: trackByTeamId" class="athletes-team-btn" [class.active]="teamFilter === t.team_id" (click)="selectTeam(t.team_id)">
@@ -28,9 +28,9 @@
 
 <!-- Sub-team Filter (shows only when a big team is selected and has sub-teams) -->
 <div *ngIf="teamFilter && getSubTeamsOf(teamFilter).length > 0" class="athletes-team-filter" style="margin-top:10px;padding:10px 16px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)">
-  <span style="font-size:.8rem;color:var(--text-muted);margin-right:8px;white-space:nowrap">ทีมย่อย:</span>
+  <span style="font-size:.8rem;color:var(--text-muted);margin-right:8px;white-space:nowrap">{{ 'ทีมย่อย:' | t }}</span>
   <button class="athletes-team-btn" [class.active]="subTeamFilter === ''" (click)="selectSubTeam('')" style="font-size:.78rem;padding:3px 10px">
-    <span class="athletes-team-btn-name">ทั้งหมด</span>
+    <span class="athletes-team-btn-name">{{ 'ทั้งหมด' | t }}</span>
     <span class="athletes-team-btn-count">{{ countInTeam(teamFilter) }}</span>
   </button>
   <button *ngFor="let s of getSubTeamsOf(teamFilter); trackBy: trackByTeamId" class="athletes-team-btn" [class.active]="subTeamFilter === s.team_id" (click)="selectSubTeam(s.team_id)" style="font-size:.78rem;padding:3px 10px">
@@ -55,7 +55,7 @@
   <div *ngIf="filtered.length === 0" style="grid-column:1/-1">
     <div class="empty-state">
       <app-mascot [size]="100" mood="sleep"></app-mascot>
-      <div class="empty-state-title">ไม่พบนักกีฬา</div>
+      <div class="empty-state-title">{{ 'ไม่พบนักกีฬา' | t }}</div>
     </div>
   </div>
 
@@ -69,7 +69,7 @@
     <div class="athlete-card-meta">
       <span class="badge badge-gold">{{ (u.team_id | teamName) }}</span>
       <span *ngIf="u.sub_team_id" class="badge badge-subteam" style="font-size:.68rem">{{ getSubTeamName(u.sub_team_id) }}</span>
-      <span *ngIf="!u.is_active" class="badge badge-gray">ไม่ใช้งาน</span>
+      <span *ngIf="!u.is_active" class="badge badge-gray">{{ 'ไม่ใช้งาน' | t }}</span>
     </div>
   </div>
 </div>
@@ -125,7 +125,7 @@
       <form [formGroup]="form">
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">คำนำหน้า</label>
+            <label class="form-label">{{ 'คำนำหน้า' | t }}</label>
             <app-select formControlName="th_prefix" [allowEmpty]="false" [options]="[{value:'นาย',label:'นาย'},{value:'นาง',label:'นาง'},{value:'นางสาว',label:'นางสาว'},{value:'เด็กชาย',label:'เด็กชาย'},{value:'เด็กหญิง',label:'เด็กหญิง'}]" />
           </div>
           <div class="form-group">
@@ -139,21 +139,21 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">ชื่อ (ไทย) <span class="required">*</span></label>
+            <label class="form-label">{{ 'ชื่อ (ไทย)' | t }} <span class="required">*</span></label>
             <input class="form-control" formControlName="th_first_name" />
           </div>
           <div class="form-group">
-            <label class="form-label">นามสกุล (ไทย) <span class="required">*</span></label>
+            <label class="form-label">{{ 'นามสกุล (ไทย)' | t }} <span class="required">*</span></label>
             <input class="form-control" formControlName="th_last_name" />
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">First Name (EN)</label>
+            <label class="form-label">{{ 'ชื่อ (อังกฤษ)' | t }}</label>
             <input class="form-control" formControlName="en_first_name" />
           </div>
           <div class="form-group">
-            <label class="form-label">Last Name (EN)</label>
+            <label class="form-label">{{ 'นามสกุล (อังกฤษ)' | t }}</label>
             <input class="form-control" formControlName="en_last_name" />
           </div>
         </div>
@@ -163,7 +163,7 @@
             <input class="form-control" type="email" formControlName="email" />
           </div>
           <div class="form-group">
-            <label class="form-label">เบอร์โทรศัพท์</label>
+            <label class="form-label">{{ 'เบอร์โทรศัพท์' | t }}</label>
             <input class="form-control" formControlName="phone" placeholder="0812345678" />
           </div>
         </div>

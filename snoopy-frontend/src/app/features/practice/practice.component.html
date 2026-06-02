@@ -55,7 +55,7 @@
                 {{ sessionStyle(i).suit }}
               </span>
               <div>
-                <div style="font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)">Session</div>
+                <div style="font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)">{{ 'เซสชัน' | t }}</div>
                 <div style="font-size:1rem;font-weight:800;color:var(--text-primary);line-height:1.2">{{ l.section }}</div>
               </div>
             </div>
@@ -72,13 +72,13 @@
                  class="btn btn-sm" [style.background]="sessionStyle(i).accent"
                  [style.border-color]="sessionStyle(i).accent"
                  style="color:#fff;flex:1;justify-content:center;display:flex;align-items:center;gap:5px;text-decoration:none">
-                <span class="mi mi-sm">person</span> Player
+                <span class="mi mi-sm">person</span> {{ 'นักกีฬา' | t }}
               </a>
               <a *ngIf="(auth.isAdmin || auth.role==='Coach') && l.coach_link"
                  [href]="l.coach_link | rbLink" target="_blank" rel="noopener"
                  class="btn btn-ghost btn-sm"
                  style="flex:1;justify-content:center;display:flex;align-items:center;gap:5px;text-decoration:none">
-                <span class="mi mi-sm">sports</span> Coach
+                <span class="mi mi-sm">sports</span> {{ 'โค้ช' | t }}
               </a>
             </div>
             <div *ngIf="l.note" style="font-size:.8rem;color:var(--text-secondary);background:var(--bg);border-radius:6px;padding:7px 9px">
@@ -179,7 +179,7 @@
             <app-date-picker formControlName="practice_date" />
           </div>
           <div class="form-group">
-            <label class="form-label">ชื่อ Session <span class="required">*</span></label>
+            <label class="form-label">{{ 'ชื่อเซสชัน' | t }} <span class="required">*</span></label>
             <input class="form-control" type="text" formControlName="section" [placeholder]="'เช่น A, B, Session A...' | t" />
           </div>
         </div>
