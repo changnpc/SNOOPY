@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SelectOption } from '../../shared/components/ui-select/ui-select.component';
 import { AuthService } from '../../core/services/auth.service';
 import { AttendanceService } from '../../core/services/attendance.service';
+import { PracticeService } from '../../core/services/practice.service';
 import { TeamsService } from '../../core/services/teams.service';
 import { UsersService } from '../../core/services/users.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -15,6 +16,7 @@ export class AttendanceComponent implements OnInit {
   activeTab: 'sheet' | 'history' = 'sheet';
   loading = true;
   saving = false;
+  hasSession = true;   // false → no practice session that day → hide check-in sheet
 
   teams: Team[] = [];
   selectedDate = new Date().toISOString().slice(0,10);
@@ -41,6 +43,7 @@ export class AttendanceComponent implements OnInit {
   constructor(
     public auth: AuthService,
     private attSvc: AttendanceService,
+    private practiceSvc: PracticeService,
     private teamsSvc: TeamsService,
     private usersSvc: UsersService,
     private toast: ToastService,
@@ -71,6 +74,18 @@ export class AttendanceComponent implements OnInit {
   loadSheet() {
     if (!this.selectedTeamId) return;
     this.loading = true;
+    // First check whether this team has any practice session on the selected date.
+    this.practiceSvc.getSessionsByDate(this.selectedDate, this.selectedTeamId).subscribe({
+      next: (sr: any) => {
+        this.hasSession = sr.success && sr.data.length > 0;
+        if (!this.hasSession) { this.players = []; this.loading = false; return; }
+        this.loadPlayers();
+      },
+      error: () => { this.hasSession = false; this.players = []; this.loading = false; }
+    });
+  }
+
+  private loadPlayers() {
     this.usersSvc.getAll({ team_id: this.selectedTeamId, role: 'Player', is_active: true }).subscribe((ur: any) => {
       const users: User[] = ur.success ? ur.data : [];
       this.attSvc.getSheet(this.selectedDate, this.selectedTeamId).subscribe({

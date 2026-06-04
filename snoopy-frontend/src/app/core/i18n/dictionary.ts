@@ -385,4 +385,6 @@ export const EN: Record<string, string> = {
   'เซสชัน': 'Session',
   'ชื่อเซสชัน': 'Session name',
   'กิจกรรมดีๆ รอทุกคนอยู่นะจ๊ะ 🎉': 'Fun activities are waiting for everyone! 🎉',
+  'วันนี้ยังไม่มีเซสชันซ้อม': 'No practice session on this day',
+  'เมื่อมีลิงก์ซ้อมของวันนี้ จึงจะเช็กชื่อได้': 'Check-in opens once a practice link is added for this day',
 };

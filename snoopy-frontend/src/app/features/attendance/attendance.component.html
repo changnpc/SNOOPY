@@ -24,7 +24,7 @@
 </div>
 
 <!-- Summary -->
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+<div *ngIf="activeTab==='sheet' && hasSession" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
   <div style="background:#e8f5e9;border-radius:var(--radius);padding:16px;text-align:center;border:1px solid #2e7d3222">
     <svg width="28" height="28" viewBox="0 0 24 24" fill="#2e7d32"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
     <div style="font-size:1.8rem;font-weight:800;color:#2e7d32;margin:4px 0">{{ summary.present }}</div>
@@ -62,12 +62,19 @@
       <app-mascot [size]="96" mood="happy" [animate]="true"></app-mascot>
       <p>{{ 'กำลังโหลด...' | t }}</p>
     </div>
-    <div *ngIf="!loading && players.length===0" class="empty-state" style="padding:40px">
+    <!-- No practice session that day -->
+    <div *ngIf="!loading && !hasSession" class="empty-state" style="padding:40px">
+      <app-mascot [size]="100" mood="sleep"></app-mascot>
+      <div class="empty-state-title">{{ 'วันนี้ยังไม่มีเซสชันซ้อม' | t }}</div>
+      <div class="empty-state-sub">{{ 'เมื่อมีลิงก์ซ้อมของวันนี้ จึงจะเช็กชื่อได้' | t }}</div>
+    </div>
+
+    <div *ngIf="!loading && hasSession && players.length===0" class="empty-state" style="padding:40px">
       <app-mascot [size]="100" mood="sleep"></app-mascot>
       <div class="empty-state-title">{{ 'ไม่มีนักกีฬาในทีมนี้' | t }}</div>
     </div>
 
-    <div *ngIf="!loading && players.length>0">
+    <div *ngIf="!loading && hasSession && players.length>0">
       <!-- Bulk quick-select bar -->
       <div class="att-bulk-bar">
         <span class="att-bulk-label">{{ 'เลือกทั้งหมด' | t }}</span>

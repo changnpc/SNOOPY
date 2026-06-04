@@ -50,6 +50,22 @@ export async function getPracticeLinks(
   });
 }
 
+// ─── Count practice sessions for a date + team (incl. archived) ──
+// Used by attendance to decide whether a check-in sheet should be shown.
+// A session counts if practice_date matches AND it targets this team OR all teams.
+export async function getSessionsByDate(
+  date: string,
+  teamId: string,
+  requester: JwtPayload
+): Promise<PracticeLink[]> {
+  // RBAC: a Coach may only inspect their own team.
+  if (requester.role === 'Coach' && teamId !== requester.team_id) {
+    throw Object.assign(new Error('RBAC_WRONG_TEAM'), { code: 'RBAC_WRONG_TEAM' });
+  }
+  const all = await findAll<PracticeLink>(SHEETS.PRACTICE_LINKS);
+  return all.filter(l => l.practice_date === date && (!l.team_id || l.team_id === teamId));
+}
+
 // ─── Create practice link (Super Admin) ──────────────────────
 export async function createPracticeLink(
   data: { practice_date: string; team_id?: string; section: string; player_link: string; coach_link?: string; note?: string },

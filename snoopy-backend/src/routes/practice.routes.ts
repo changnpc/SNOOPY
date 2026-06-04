@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/rbac.middleware';
-import { getPracticeLinks, createPracticeLink, updatePracticeLink, deletePracticeLink, archiveExpiredLinks } from '../services/practice.service';
+import { getPracticeLinks, getSessionsByDate, createPracticeLink, updatePracticeLink, deletePracticeLink, archiveExpiredLinks } from '../services/practice.service';
 import { ok, fail } from '../models';
 
 const router = Router();
@@ -18,6 +18,21 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 router.get('/history', async (req: AuthRequest, res: Response) => {
   const links = await getPracticeLinks(req.user!, true);
   res.json(ok(links));
+});
+
+// GET /api/practice-links/by-date?date=&team_id= — sessions for a day (incl. archived)
+router.get('/by-date', requireRole('Super Admin', 'Coach'), async (req: AuthRequest, res: Response) => {
+  const { date, team_id } = req.query as Record<string, string>;
+  if (!date || !team_id) {
+    res.status(400).json(fail('VALIDATION_ERROR', 'กรุณาระบุ date และ team_id'));
+    return;
+  }
+  try {
+    const links = await getSessionsByDate(date, team_id, req.user!);
+    res.json(ok(links));
+  } catch (e: any) {
+    res.status(e.code === 'RBAC_WRONG_TEAM' ? 403 : 400).json(fail(e.code, e.message));
+  }
 });
 
 // POST /api/practice-links — Super Admin + Coach

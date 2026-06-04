@@ -14,6 +14,11 @@ export class PracticeService {
     return this.api.get<ApiResponse<PracticeLink[]>>('/practice-links/history');
   }
 
+  /** Practice sessions for a specific date + team (incl. archived). */
+  getSessionsByDate(date: string, teamId: string) {
+    return this.api.get<ApiResponse<PracticeLink[]>>('/practice-links/by-date', { date, team_id: teamId });
+  }
+
   create(data: Partial<PracticeLink>) {
     return this.api.post<ApiResponse<PracticeLink>>('/practice-links', data);
   }
