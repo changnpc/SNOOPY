@@ -21,4 +21,9 @@ export class AttendanceService {
   upsert(data: { date: string; player_id: string; team_id: string; status: string; note?: string }) {
     return this.api.post<ApiResponse<AttendanceRecord>>('/attendance', data);
   }
+
+  /** Save a whole team in one request — server does 1 read + 2 writes. */
+  batchUpsert(records: { date: string; player_id: string; team_id: string; status: string; note?: string }[]) {
+    return this.api.post<ApiResponse<null>>('/attendance/batch', records);
+  }
 }

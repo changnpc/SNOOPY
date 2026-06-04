@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { forkJoin } from 'rxjs';
 import { SelectOption } from '../../shared/components/ui-select/ui-select.component';
 import { AuthService } from '../../core/services/auth.service';
 import { AttendanceService } from '../../core/services/attendance.service';
@@ -100,10 +99,12 @@ export class AttendanceComponent implements OnInit {
     const toSave = this.players.filter(p => p.status);
     if (!toSave.length) { this.toast.warning('ยังไม่มีการเช็กชื่อ'); return; }
     this.saving = true;
-    const calls = toSave.map(p =>
-      this.attSvc.upsert({ date: this.selectedDate, player_id: p.user.user_id, team_id: this.selectedTeamId, status: p.status, note: p.note })
-    );
-    forkJoin(calls).subscribe({
+    const records = toSave.map(p => ({
+      date: this.selectedDate, player_id: p.user.user_id, team_id: this.selectedTeamId,
+      status: p.status, note: p.note,
+    }));
+    // One request for the whole team — server does 1 read + 2 writes.
+    this.attSvc.batchUpsert(records).subscribe({
       next: () => { this.saving = false; this.toast.success('บันทึกการเช็กชื่อสำเร็จ'); },
       error: () => { this.saving = false; this.toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่'); }
     });

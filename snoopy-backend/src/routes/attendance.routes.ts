@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/rbac.middleware';
-import { getAttendanceByDate, getMyAttendance, upsertAttendance, getAttendanceHistory } from '../services/attendance.service';
+import { getAttendanceByDate, getMyAttendance, upsertAttendance, batchUpsertAttendance, getAttendanceHistory } from '../services/attendance.service';
 import { ok, fail } from '../models';
 
 const router = Router();
@@ -32,6 +32,22 @@ router.get('/', requireRole('Super Admin', 'Coach'), async (req: AuthRequest, re
     res.json(ok(records));
   } catch (e: any) {
     res.status(403).json(fail(e.code, e.message));
+  }
+});
+
+// POST /api/attendance/batch — upsert a whole team in one request (1 read + 2 writes)
+router.post('/batch', requireRole('Super Admin', 'Coach'), async (req: AuthRequest, res: Response) => {
+  try {
+    const records = Array.isArray(req.body) ? req.body : req.body?.records;
+    if (!Array.isArray(records)) {
+      res.status(400).json(fail('VALIDATION_ERROR', 'กรุณาส่งรายการเช็กชื่อเป็น array'));
+      return;
+    }
+    await batchUpsertAttendance(records, req.user!.user_id, req.user!);
+    res.status(200).json(ok(null, 'Attendance check-in successful.'));
+  } catch (e: any) {
+    const status = e.code === 'RBAC_WRONG_TEAM' ? 403 : 400;
+    res.status(status).json(fail(e.code, e.message));
   }
 });
 
