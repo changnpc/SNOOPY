@@ -25,8 +25,6 @@ export class LeaveComponent implements OnInit {
   submitForm!: FormGroup;
   saving = false;
   today = new Date().toISOString().slice(0,10);
-  selectedEvidence: File | null = null;
-  evidencePreview: string | null = null;
 
   constructor(
     public auth: AuthService,
@@ -76,22 +74,7 @@ export class LeaveComponent implements OnInit {
     } else { this.loading = false; }
   }
 
-  onEvidence(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    this.selectedEvidence = file;
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = e => this.evidencePreview = e.target?.result as string;
-      reader.readAsDataURL(file);
-    } else {
-      this.evidencePreview = null;
-    }
-  }
-
   openSubmitModal() {
-    this.selectedEvidence = null;
-    this.evidencePreview = null;
     this.initForms();
     this.showSubmitModal = true;
   }
@@ -99,10 +82,7 @@ export class LeaveComponent implements OnInit {
   submitLeave() {
     if (this.submitForm.invalid) return;
     this.saving = true;
-    const fd = new FormData();
-    Object.entries(this.submitForm.value).forEach(([k,v]) => fd.append(k, v as string));
-    if (this.selectedEvidence) fd.append('evidence', this.selectedEvidence);
-    this.leaveSvc.submit(fd).subscribe({
+    this.leaveSvc.submit(this.submitForm.value).subscribe({
       next: () => { this.toast.success('ส่งคำขอลาสำเร็จ'); this.showSubmitModal = false; this.saving = false; this.loadAll(); },
       error: (e) => { this.saving = false; this.toast.error(e.error?.error?.message ?? 'เกิดข้อผิดพลาด'); }
     });

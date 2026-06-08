@@ -1,4 +1,4 @@
-import { findAll, appendRow, updateRow, getHeaders, findOne } from './google-sheets.service';
+import { findAll, appendRows, updateRow, getHeaders, findOne } from './google-sheets.service';
 import { SHEETS } from '../config/sheets.config';
 import { NotificationType } from '../models';
 import { generateId } from '../utils/id-generator';
@@ -39,7 +39,10 @@ export async function createNotification(opts: CreateNotifOptions): Promise<void
     admins.forEach(a => { if (!recipients.includes(a.user_id)) recipients.push(a.user_id); });
   }
 
-  for (const userId of recipients) {
+  // Build every recipient's row, then write them all in ONE Sheets API call.
+  // Previously this looped one appendRow() per recipient — for a full team that
+  // meant dozens of sequential round-trips (15-30s), blocking the create request.
+  const rows = recipients.map(userId => {
     const notif: NotificationRecord = {
       notification_id: generateId('NOTI'),
       user_id:   userId,
@@ -50,9 +53,9 @@ export async function createNotification(opts: CreateNotifOptions): Promise<void
       is_read:   'FALSE',
       created_at: nowStr(),
     };
-    const row = headers.map(h => String((notif as any)[h] ?? ''));
-    await appendRow(SHEETS.NOTIFICATIONS, row);
-  }
+    return headers.map(h => String((notif as any)[h] ?? ''));
+  });
+  await appendRows(SHEETS.NOTIFICATIONS, rows);
 }
 
 export async function getMyNotifications(userId: string): Promise<NotificationRecord[]> {

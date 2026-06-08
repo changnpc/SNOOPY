@@ -28,6 +28,8 @@ async function getSubfolderId(key: SubfolderKey): Promise<string> {
     q: `'${rootId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
     fields: 'files(id)',
     spaces: 'drive',
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   });
 
   let folderId: string;
@@ -42,6 +44,7 @@ async function getSubfolderId(key: SubfolderKey): Promise<string> {
         parents: [rootId],
       },
       fields: 'id',
+      supportsAllDrives: true,
     });
     folderId = created.data.id!;
   }
@@ -81,6 +84,7 @@ export async function uploadFile(opts: UploadOptions): Promise<UploadResult> {
       body:     bufferStream,
     },
     fields: 'id, webViewLink, webContentLink',
+    supportsAllDrives: true,
   });
 
   const fileId = file.data.id!;
@@ -92,6 +96,7 @@ export async function uploadFile(opts: UploadOptions): Promise<UploadResult> {
       role: 'reader',
       type: 'anyone',
     },
+    supportsAllDrives: true,
   });
 
   return {
@@ -114,7 +119,7 @@ export function getDirectUrl(fileId: string): string {
 // ─── Delete File ─────────────────────────────────────────────
 export async function deleteFile(fileId: string): Promise<void> {
   try {
-    await driveClient.files.delete({ fileId });
+    await driveClient.files.delete({ fileId, supportsAllDrives: true });
   } catch (err: any) {
     // Ignore 404 (file already deleted)
     if (err?.code !== 404) throw err;

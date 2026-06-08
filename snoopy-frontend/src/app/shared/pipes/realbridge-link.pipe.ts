@@ -37,6 +37,7 @@ export class RealbridgeLinkPipe implements PipeTransform {
     const last  = user.en_last_name.toUpperCase();
     const name  = encodeURIComponent(`${first} ${last}`);
     const sep   = url.includes('?') ? '&' : '?';
-    return `${url}${sep}n=${name}`;
+    const id     = encodeURIComponent(user.user_id);
+    return `${url}${sep}n=${name}&i=${id}`;
   }
 }

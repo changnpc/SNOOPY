@@ -14,8 +14,8 @@ export class LeaveService {
     return this.api.get<ApiResponse<LeaveRequest[]>>('/leave-requests/my');
   }
 
-  submit(formData: FormData) {
-    return this.api.postForm<ApiResponse<LeaveRequest>>('/leave-requests', formData);
+  submit(body: { start_date: string; end_date: string; reason: string }) {
+    return this.api.post<ApiResponse<LeaveRequest>>('/leave-requests', body);
   }
 
   cancel(id: string) {

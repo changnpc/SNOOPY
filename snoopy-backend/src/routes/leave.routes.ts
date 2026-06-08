@@ -1,9 +1,7 @@
 import { Router, Response } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/rbac.middleware';
-import { upload } from '../middleware/upload.middleware';
 import { getLeaveRequests, submitLeaveRequest, cancelLeave, approveLeave, rejectLeave } from '../services/leave.service';
-import { uploadMulterFile } from '../services/google-drive.service';
 import { ok, fail } from '../models';
 
 const router = Router();
@@ -23,14 +21,9 @@ router.get('/my', async (req: AuthRequest, res: Response) => {
 });
 
 // POST /api/leave-requests — Player submits leave
-router.post('/', requireRole('Player'), upload.single('evidence'), async (req: AuthRequest, res: Response) => {
+router.post('/', requireRole('Player'), async (req: AuthRequest, res: Response) => {
   try {
-    let evidence_url: string | undefined;
-    if (req.file) {
-      const uploaded = await uploadMulterFile(req.file, 'leave-evidence', `${req.user!.user_id}_leave`);
-      evidence_url = uploaded.viewUrl;
-    }
-    const leave = await submitLeaveRequest({ ...req.body, evidence_url }, req.user!);
+    const leave = await submitLeaveRequest(req.body, req.user!);
     res.status(201).json(ok(leave, 'The request has been successfully submitted.'));
   } catch (e: any) {
     const httpStatus: Record<string, number> = {

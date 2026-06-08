@@ -43,7 +43,10 @@ router.get('/me', authenticate, async (req: any, res: Response) => {
       res.status(404).json({ success: false, error: { code: 'USER_NOT_FOUND', message: 'No user information found.' } });
       return;
     }
-    const { phone, birth_date, google_sub, ...safeUser } = found.data as any;
+    // This is the caller's OWN record (matched on req.user.user_id), so the
+    // restricted fields phone/birth_date are returned here — only google_sub
+    // (an internal identity id) stays hidden.
+    const { google_sub, ...safeUser } = found.data as any;
     res.status(200).json(ok(safeUser));
   } catch (err: any) {
     console.error('[Auth] /me error:', err.message);

@@ -22,7 +22,9 @@ export class ProfileComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.user = this.auth.currentUser as User;
+    this.user = this.auth.currentUser as User;   // instant render from cached token
+    // currentUser (from JWT) omits restricted fields; fetch the full record.
+    this.auth.getMe().subscribe(r => { if (r.success && r.data) this.user = r.data; });
     if (this.user?.team_name) this.teamName = this.user.team_name;
     this.teamsSvc.getAll().subscribe((r: any) => {
       if (!r.success) return;

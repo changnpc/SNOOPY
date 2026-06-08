@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { AuthUser, ApiResponse } from '../../models';
+import { AuthUser, User, ApiResponse } from '../../models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -49,6 +49,11 @@ export class AuthService {
         }
       })
     );
+  }
+
+  /** Fetch the caller's full profile, incl. restricted fields (phone, birth_date). */
+  getMe(): Observable<ApiResponse<User>> {
+    return this.http.get<ApiResponse<User>>(`${environment.apiBaseUrl}/auth/me`);
   }
 
   logout(): void {
